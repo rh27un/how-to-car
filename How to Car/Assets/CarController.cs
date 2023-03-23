@@ -10,8 +10,13 @@ public class CarController : MonoBehaviour
 	public float maxMotorTorque;
 	public float maxSteeringAngle;
 	public float maxBrakeTorque;
-
+	protected Rigidbody rb;
 	public const float msToMph = 2.237f;
+
+	private void Start()
+	{
+		rb= GetComponent<Rigidbody>();
+	}
 	protected void ApplyLocalPositionToVisuals(WheelCollider collider)
 	{
 		if(collider.transform.childCount == 0) return;
@@ -38,11 +43,28 @@ public class CarController : MonoBehaviour
 	}
 	public void FixedUpdate()
 	{
-		//speed.text = $"{GetComponent<Rigidbody>().velocity.magnitude * msToMph} mph";
-		float motor = (maxMotorTorque * Input.GetAxis("Throttle"));
+		float motor;
+		float braking;
+		float leftTrigger = Mathf.Clamp(Input.GetAxis("Throttle"), -1, 0);
+		float rightTrigger = Mathf.Clamp(Input.GetAxis("Throttle"), 0, 1);
+		Vector3 velocity = rb.velocity;
+		if(velocity.magnitude < 0.1f)
+		{
+			motor = (maxMotorTorque * rightTrigger) + (maxMotorTorque * leftTrigger);
+			braking = 0f;
+		}
+		else if(Vector3.Dot(transform.forward, velocity) > 0)
+		{
+			motor = maxMotorTorque * rightTrigger;
+			braking = 0 - maxBrakeTorque * leftTrigger;
+		}
+		else
+		{
+			motor = maxMotorTorque * leftTrigger;
+			braking = maxMotorTorque * rightTrigger;
+		}
 		Debug.Log(Input.GetAxis("Throttle"));
 		float steering = maxSteeringAngle * Input.GetAxis("Horizontal");
-		float braking = maxBrakeTorque * 0 - Mathf.Clamp(Input.GetAxis("Brake"), -1, 0);
 
 		foreach(var axleInfo in axleInfos)
 		{
