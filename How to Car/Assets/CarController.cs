@@ -63,11 +63,38 @@ public class CarController : MonoBehaviour
 			motor = maxMotorTorque * leftTrigger;
 			braking = maxMotorTorque * rightTrigger;
 		}
-		Debug.Log(Input.GetAxis("Throttle"));
 		float steering = maxSteeringAngle * Input.GetAxis("Horizontal");
 
 		foreach(var axleInfo in axleInfos)
 		{
+			WheelFrictionCurve rightCurve = axleInfo.right.sidewaysFriction;
+			WheelFrictionCurve leftCurve = axleInfo.left.sidewaysFriction;
+
+			WheelHit rightHit;
+			WheelHit leftHit;
+
+			if (axleInfo.right.GetGroundHit(out rightHit))
+			{
+				if (rightHit.collider.material.name == "Dirt") // etc
+				{
+					rightCurve.stiffness = 0.7f;
+				} else
+				{
+					rightCurve.stiffness = 1f;
+				}
+			}
+			if (axleInfo.left.GetGroundHit(out leftHit))
+			{
+				if (leftHit.collider.material.name == "Dirt") // etc
+				{
+					leftCurve.stiffness = 0.7f;
+				}
+				else
+				{
+					leftCurve.stiffness = 1f;
+				}
+			}
+
 			if (axleInfo.steering)
 			{
 				axleInfo.right.steerAngle = steering;
@@ -79,6 +106,17 @@ public class CarController : MonoBehaviour
 				axleInfo.right.motorTorque = motor;
 				axleInfo.left.motorTorque = motor;
 			}
+			if (Input.GetButton("Jump"))
+			{
+				braking = (maxSteeringAngle - Mathf.Abs(steering)) * maxBrakeTorque;
+				if(axleInfo.drifting)
+				{
+					rightCurve.stiffness /= 2f;
+					leftCurve.stiffness /= 2f;
+				}
+			}
+			axleInfo.right.sidewaysFriction = rightCurve;
+			axleInfo.left.sidewaysFriction = leftCurve;
 			axleInfo.right.brakeTorque = braking;
 			axleInfo.left.brakeTorque = braking;
 			ApplyLocalPositionToVisuals(axleInfo.left);
@@ -94,4 +132,5 @@ public class AxleInfo
 	public WheelCollider right;
 	public bool motor;
 	public bool steering;
+	public bool drifting;
 }
