@@ -75,6 +75,15 @@ public class CarController : MonoBehaviour
 
 			if (axleInfo.right.GetGroundHit(out rightHit))
 			{
+				if(Mathf.Abs(rightHit.sidewaysSlip) > 0.5f)
+				{
+					axleInfo.right.GetComponent<TrailRenderer>().emitting = true;
+
+				} else
+				{
+					axleInfo.right.GetComponent<TrailRenderer>().emitting = false;
+				}
+				
 				if (rightHit.collider.material.name == "Dirt") // etc
 				{
 					rightCurve.stiffness = 0.7f;
@@ -85,6 +94,15 @@ public class CarController : MonoBehaviour
 			}
 			if (axleInfo.left.GetGroundHit(out leftHit))
 			{
+				if (Mathf.Abs(leftHit.sidewaysSlip) > 0.5f)
+				{
+					axleInfo.left.GetComponent<TrailRenderer>().emitting = true;
+
+				}
+				else
+				{
+					axleInfo.left.GetComponent<TrailRenderer>().emitting = false;
+				}
 				if (leftHit.collider.material.name == "Dirt") // etc
 				{
 					leftCurve.stiffness = 0.7f;
