@@ -101,10 +101,15 @@ public enum GameMode
 }
 public class Serializer : MonoBehaviour
 {
+
+
+	[SerializeField]
+	protected SpawnablePrefabs prefabList;
+
 	public string filePath;
 	public GameMode gameMode;
 	// Start is called before the first frame update
-	void Awake()
+	void Start()
 	{
 		if(gameObject.tag == "Serializer")
 		{
@@ -116,13 +121,22 @@ public class Serializer : MonoBehaviour
 
 	void OnSceneLoaded(Scene scene, LoadSceneMode mode)
 	{
-		if (scene.buildIndex != 1) // main scene
+		if (scene.buildIndex != 1)
+		{// main scene
+			Destroy(gameObject);
 			return;
+		}
 		switch (gameMode)
 		{
 			case GameMode.Play:
 				GameObject.Find("GAMEPLAY").SetActive(true);
 				GameObject.Find("LEVEL EDITOR").SetActive(false);
+				var objects = LoadLevel();
+				foreach (var obj in objects)
+				{
+					var newObject = Instantiate(prefabList.Prefabs[obj.type], obj.position, obj.rotation);
+					obj.transform = newObject.transform;
+				}
 				break;
 			case GameMode.Editor:
 				GameObject.Find("GAMEPLAY").SetActive(false);
@@ -132,7 +146,6 @@ public class Serializer : MonoBehaviour
 				Debug.LogError("Invalid Game Mode");
 				return;
 		}
-		LoadLevel();
 	}
 
 	
@@ -150,10 +163,18 @@ public class Serializer : MonoBehaviour
 
 	public List<LevelObject> LoadLevel()
 	{
-		var objects = new List<LevelObject>();
-		string json = File.ReadAllText(filePath);
-		LevelObject[] importedObjects = JsonArray.FromJson<LevelObject>(json);
-		objects = importedObjects.ToList();
-		return objects;
+		if (File.Exists(filePath))
+		{
+			string json = File.ReadAllText(filePath);
+			LevelObject[] importedObjects = JsonArray.FromJson<LevelObject>(json);
+			var objects = importedObjects.ToList();
+			Debug.Log("Succesfully loaded " + filePath + " in " + gameMode.ToString() + " mode");
+			return objects;
+		}
+		else
+		{
+			Debug.LogWarning("Cannot load " + filePath);
+			return null;
+		}
 	}
 }

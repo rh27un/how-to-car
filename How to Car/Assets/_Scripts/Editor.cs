@@ -12,7 +12,7 @@ using UnityEngine.UI;
 using System.Transactions;
 using TreeEditor;
 using System.Data;
-
+using TMPro;
 
 public class Editor : MonoBehaviour
 {
@@ -26,8 +26,11 @@ public class Editor : MonoBehaviour
 	protected EditorState currentState = EditorState.Simple;
 	protected EditorState moveState = EditorState.Simple;
 
+	//[SerializeField]
+	//protected GameObject[] spawnablePrefabs;
+
 	[SerializeField]
-	protected GameObject[] spawnablePrefabs;
+	protected SpawnablePrefabs prefabList;
 
 	protected List<LevelObject> objects;
 
@@ -67,6 +70,9 @@ public class Editor : MonoBehaviour
 
 	protected Serializer serializer;
 
+	[SerializeField]
+	protected TMP_InputField levelName;
+
 	Dictionary<int, TrackObject> trackObjects = new Dictionary<int, TrackObject>()
 	{
 		{
@@ -83,22 +89,22 @@ public class Editor : MonoBehaviour
 		{
 			5, new TrackObject()
 			{
-				type = 5,
+			type = 5,
 				joints = new TrackJoint[2]
 				{
-					new TrackJoint() { offset = Vector3.zero, forward = Vector3.forward },
-					new TrackJoint() { offset = new Vector3(-2.84f, 0f, -6.32f), forward = new Vector3(-0.707106f, 0f, -0.707106f)}
+					new TrackJoint() { offset = new Vector3(-6.8f, 0f, -6.8f), forward = Vector3.left },
+					new TrackJoint() { offset = Vector3.zero, forward = Vector3.forward }
 				}
 			}
 		},
 		{
 			6, new TrackObject()
 			{
-			type = 6,
+				type = 6,
 				joints = new TrackJoint[2]
 				{
-					new TrackJoint() { offset = new Vector3(-6.8f, 0f, -6.8f), forward = Vector3.left },
-					new TrackJoint() { offset = Vector3.zero, forward = Vector3.forward }
+					new TrackJoint() { offset = Vector3.zero, forward = Vector3.forward },
+					new TrackJoint() { offset = new Vector3(-2.84f, 0f, -6.32f), forward = new Vector3(-0.707106f, 0f, -0.707106f)}
 				}
 			}
 		},
@@ -153,12 +159,12 @@ public class Editor : MonoBehaviour
 		gizmo.transform.position = transform.forward * -1000f;
 		selectedObject = null;
 		typeToSpawn = type;
-		var mesh = spawnablePrefabs[type].GetComponentInChildren<MeshFilter>().sharedMesh;
+		var mesh = prefabList.Prefabs[type].GetComponentInChildren<MeshFilter>().sharedMesh;
 		preview.GetComponent<MeshFilter>().sharedMesh = mesh;
 		preview.GetComponent<MeshCollider>().sharedMesh = mesh;
-		if (spawnablePrefabs[type].transform.childCount > 0)
+		if (prefabList.Prefabs[type].transform.childCount > 0)
 		{
-			preview.transform.rotation = spawnablePrefabs[type].transform.GetChild(0).rotation;
+			preview.transform.rotation = prefabList.Prefabs[type].transform.GetChild(0).rotation;
 		}
 		else
 		{
@@ -166,6 +172,7 @@ public class Editor : MonoBehaviour
 		}
 		if (trackObjects.ContainsKey(type))
 		{
+			currentJoint = currentJoint % trackObjects[typeToSpawn].joints.Length;
 			foreach (var trackObject in objects.Where(o => trackObjects.ContainsKey(o.type)))
 			{
 				var track = (TrackObject)trackObject;
@@ -224,36 +231,41 @@ public class Editor : MonoBehaviour
 
 	private void Start()
 	{
-		serializer = GameObject.FindGameObjectWithTag("Serializer").GetComponent<Serializer>();
-		if (serializer == null) // assume we're debugging
+		var serializerObject = GameObject.FindGameObjectWithTag("Serializer");
+		if (serializerObject == null) // assume we're debugging
 		{
+			GameObject.Find("GAMEPLAY").SetActive(false);
 			serializer = gameObject.AddComponent<Serializer>();
 			serializer.filePath = "Debug.json";
+		} else
+		{
+			serializer = serializerObject.GetComponent<Serializer>();
+			Load();
 		}
 		moveModeText.text = moveState == EditorState.Simple ? "Simple" : "Advanced";
 		objects = new List<LevelObject>();
 		camera = GetComponent<Camera>();
 		gizmo = Instantiate(gizmoPrefab, transform.forward * -1000f, Quaternion.identity);
-		preview = Instantiate(spawnablePrefabs[0], Vector3.zero, Quaternion.identity);
+		preview = Instantiate(prefabList.Prefabs[0], Vector3.zero, Quaternion.identity);
 		preview.GetComponent<MeshRenderer>().material = previewMaterial;
 		preview.layer = 2;
-		var bussy = spawnablePrefabs[0].GetComponent<MeshFilter>();
+		var bussy = prefabList.Prefabs[0].GetComponent<MeshFilter>();
 		var mesh = bussy.sharedMesh;
-		if (spawnablePrefabs[0].transform.childCount > 0)
+		if (prefabList.Prefabs[0].transform.childCount > 0)
 		{
-			preview.transform.rotation = spawnablePrefabs[0].transform.GetChild(0).rotation;
+			preview.transform.rotation = prefabList.Prefabs[0].transform.GetChild(0).rotation;
 		}
 		else
 		{
 			preview.transform.rotation = Quaternion.identity;
 		}
 		preview.GetComponent<MeshFilter>().sharedMesh = mesh;
-		for (int i = 0; i < spawnablePrefabs.Length; i++)
+		for (int i = 0; i < prefabList.Prefabs.Count(); i++)
 		{
 			int type = new int();
 			type = i;
 			var button = Instantiate(buttonPrefab, content.transform.position, content.rotation, content);
-			button.GetComponentInChildren<TMP_Text>().text = spawnablePrefabs[i].name;
+			button.GetComponentInChildren<TMP_Text>().text = prefabList.Prefabs[i].name;
 			button.GetComponent<Button>().onClick.AddListener(delegate { SetType(type); });
 		}
 	}
@@ -366,7 +378,7 @@ public class Editor : MonoBehaviour
 						if (Input.GetKeyDown(KeyCode.Q))
 						{
 							currentJoint = (currentJoint + 1) % trackObjects[typeToSpawn].joints.Length;
-							var mesh = spawnablePrefabs[typeToSpawn].GetComponentInChildren<MeshFilter>().sharedMesh;
+							var mesh = prefabList.Prefabs[typeToSpawn].GetComponentInChildren<MeshFilter>().sharedMesh;
 							foreach (var trackObject in objects.Where(o => trackObjects.ContainsKey(o.type)))
 							{
 								var track = (TrackObject)trackObject;
@@ -388,7 +400,7 @@ public class Editor : MonoBehaviour
 						if (Input.GetKeyDown(KeyCode.E))
 						{
 							currentJoint = (currentJoint + trackObjects[typeToSpawn].joints.Length - 1) % trackObjects[typeToSpawn].joints.Length;
-							var mesh = spawnablePrefabs[typeToSpawn].GetComponentInChildren<MeshFilter>().sharedMesh;
+							var mesh = prefabList.Prefabs[typeToSpawn].GetComponentInChildren<MeshFilter>().sharedMesh;
 							foreach (var trackObject in objects.Where(o => trackObjects.ContainsKey(o.type)))
 							{
 								var track = (TrackObject)trackObject;
@@ -411,7 +423,7 @@ public class Editor : MonoBehaviour
 
 					if (Input.GetMouseButtonDown(0) && !IsPointerOverUIObject())
 					{
-						var newObject = Instantiate(spawnablePrefabs[typeToSpawn], hit.point, preview.transform.rotation);
+						var newObject = Instantiate(prefabList.Prefabs[typeToSpawn], hit.point, preview.transform.rotation);
 						if (newObject.transform.childCount > 0)
 						{
 							newObject.transform.Rotate(Vector3.left, -90f, Space.Self);
@@ -431,7 +443,7 @@ public class Editor : MonoBehaviour
 								if (i != currentJoint)
 								{
 									var joint = newTrack.joints[i];
-									joint.takenBy = Instantiate(spawnablePrefabs[4]);
+									joint.takenBy = Instantiate(prefabList.Prefabs[4]);
 									joint.takenBy.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
 									joint.takenBy.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(newTrack, i);
 									joint.takenBy.tag = "RoadPreview";
@@ -450,7 +462,7 @@ public class Editor : MonoBehaviour
 							for (int i = 0; i < newTrack.joints.Length; i++)
 							{
 								var joint = newTrack.joints[i];
-								joint.takenBy = Instantiate(spawnablePrefabs[4]);
+								joint.takenBy = Instantiate(prefabList.Prefabs[4]);
 								joint.takenBy.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
 								joint.takenBy.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(newTrack, i);
 								joint.takenBy.tag = "RoadPreview";
@@ -485,7 +497,7 @@ public class Editor : MonoBehaviour
 						}
 						else if (trackObjects.ContainsKey(typeToSpawn))
 						{
-							var mesh = spawnablePrefabs[typeToSpawn].GetComponentInChildren<MeshFilter>().sharedMesh;
+							var mesh = prefabList.Prefabs[typeToSpawn].GetComponentInChildren<MeshFilter>().sharedMesh;
 							foreach (var trackObject in objects.Where(o => trackObjects.ContainsKey(o.type)))
 							{
 								var track = (TrackObject)trackObject;
@@ -535,17 +547,22 @@ public class Editor : MonoBehaviour
 
 	}
 
-	private void Save()
+	public void Save()
 	{
+		serializer.filePath = levelName.text;
 		serializer.SaveLevel(objects);
 	}
 
 	private void Load()
 	{
 		objects = serializer.LoadLevel();
+		if(objects == null)
+		{
+			objects = new List<LevelObject>();
+		}
 		foreach (var obj in objects)
 		{
-			var newObject = Instantiate(spawnablePrefabs[obj.type], obj.position, obj.rotation);
+			var newObject = Instantiate(prefabList.Prefabs[obj.type], obj.position, obj.rotation);
 			obj.transform = newObject.transform;
 		}
 	}
