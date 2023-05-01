@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3536590144693548225}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Gizmo
   m_TagString: Gizmo
   m_Icon: {fileID: 0}
@@ -45,7 +45,7 @@ GameObject:
   - component: {fileID: 3536590144900103803}
   - component: {fileID: 3536590144900103802}
   - component: {fileID: 3536590144900103685}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: forward
   m_TagString: Gizmo
   m_Icon: {fileID: 0}
@@ -141,7 +141,7 @@ GameObject:
   - component: {fileID: 3536590145037670023}
   - component: {fileID: 3536590145037670022}
   - component: {fileID: 3536590145037670017}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: up
   m_TagString: Gizmo
   m_Icon: {fileID: 0}
@@ -237,7 +237,7 @@ GameObject:
   - component: {fileID: 3536590145427753344}
   - component: {fileID: 3536590145427753347}
   - component: {fileID: 3536590145427753346}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: right
   m_TagString: Gizmo
   m_Icon: {fileID: 0}
