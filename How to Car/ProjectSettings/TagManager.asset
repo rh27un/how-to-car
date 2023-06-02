@@ -8,6 +8,7 @@ TagManager:
   - Gizmo
   - RoadPreview
   - Serializer
+  - InputField
   layers:
   - Default
   - TransparentFX

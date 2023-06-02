@@ -132,10 +132,13 @@ public class Serializer : MonoBehaviour
 				GameObject.Find("GAMEPLAY").SetActive(true);
 				GameObject.Find("LEVEL EDITOR").SetActive(false);
 				var objects = LoadLevel();
-				foreach (var obj in objects)
+				if (objects != null)
 				{
-					var newObject = Instantiate(prefabList.Prefabs[obj.type], obj.position, obj.rotation);
-					obj.transform = newObject.transform;
+					foreach (var obj in objects)
+					{
+						var newObject = Instantiate(prefabList.Prefabs[obj.type], obj.position, obj.rotation);
+						obj.transform = newObject.transform;
+					}
 				}
 				break;
 			case GameMode.Editor:

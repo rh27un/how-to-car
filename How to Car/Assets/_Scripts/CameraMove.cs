@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CameraMove : MonoBehaviour
 {
@@ -26,6 +27,8 @@ public class CameraMove : MonoBehaviour
 	}
 	private void Update()
 	{
+		if (EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.tag == "InputField")
+			return;
 		Vector3 forward = transform.forward;
 		forward.y = 0;
 		Vector3 right = transform.right;

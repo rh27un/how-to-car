@@ -12,9 +12,8 @@ using UnityEngine.UI;
 using System.Transactions;
 using TreeEditor;
 using System.Data;
-using TMPro;
 
-public class Editor : MonoBehaviour
+public class LevelEditor : MonoBehaviour
 {
 	protected enum EditorState
 	{
@@ -122,7 +121,9 @@ public class Editor : MonoBehaviour
 		}
 	};
 
-	int gizmoLayer = ~(0 << 6);
+	int gizmoLayer = (1 << 6);
+	[SerializeField]
+	private bool debugLevelEditor;
 
 	public void PlaceNewTrack(TrackObject old, int oldJointIndex, TrackObject _new, int newJointIndex)
 	{
@@ -234,9 +235,17 @@ public class Editor : MonoBehaviour
 		var serializerObject = GameObject.FindGameObjectWithTag("Serializer");
 		if (serializerObject == null) // assume we're debugging
 		{
-			GameObject.Find("GAMEPLAY").SetActive(false);
-			serializer = gameObject.AddComponent<Serializer>();
-			serializer.filePath = "Debug.json";
+			if (debugLevelEditor)
+			{
+				GameObject.Find("GAMEPLAY").SetActive(false);
+				serializer = gameObject.AddComponent<Serializer>();
+				serializer.filePath = "Debug.json";
+			}
+			else
+			{
+				GameObject.Find("LEVEL EDITOR").SetActive(false);
+				return;
+			}
 		} else
 		{
 			serializer = serializerObject.GetComponent<Serializer>();
@@ -272,6 +281,10 @@ public class Editor : MonoBehaviour
 
 	private void Update()
 	{
+		//Debug.Log("Poop");
+		//Debug.Log(EventSystem.current.currentSelectedGameObject);
+		if (EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.tag == "InputField")
+			return;
 		if (Input.GetButtonDown("SwitchMode"))
 		{
 			SwitchMoveMode();
@@ -526,14 +539,14 @@ public class Editor : MonoBehaviour
 				break;
 		}
 
-		if (Input.GetKeyDown(KeyCode.C))
-		{
-			Save();
-		}
-		if (Input.GetKeyDown(KeyCode.V))
-		{
-			Load();
-		}
+		//if (Input.GetKeyDown(KeyCode.C))
+		//{
+		//	Save();
+		//}
+		//if (Input.GetKeyDown(KeyCode.V))
+		//{
+		//	Load();
+		//}
 	}
 
 	private void PlaceObject(GameObject go, RaycastHit info)
