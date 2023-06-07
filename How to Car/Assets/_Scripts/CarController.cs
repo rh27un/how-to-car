@@ -12,6 +12,8 @@ public class CarController : MonoBehaviour
 	public float maxBrakeTorque;
 	protected Rigidbody rb;
 	public const float msToMph = 2.237f;
+	[SerializeField]
+	protected float driftModifier;
 
 	private void Start()
 	{
@@ -129,8 +131,8 @@ public class CarController : MonoBehaviour
 				braking = (maxSteeringAngle - Mathf.Abs(steering)) * maxBrakeTorque;
 				if(axleInfo.drifting)
 				{
-					rightCurve.stiffness /= 2f;
-					leftCurve.stiffness /= 2f;
+					rightCurve.stiffness /= driftModifier;
+					leftCurve.stiffness /= driftModifier;
 				}
 			}
 			axleInfo.right.sidewaysFriction = rightCurve;
