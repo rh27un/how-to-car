@@ -4,13 +4,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEditor.SearchService;
 using UnityEngine;
 using TMPro;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.Transactions;
-using TreeEditor;
 using System.Data;
 
 public class LevelEditor : MonoBehaviour
@@ -116,6 +114,28 @@ public class LevelEditor : MonoBehaviour
 					new TrackJoint() { offset = Vector3.zero, forward = Vector3.forward },
 					new TrackJoint() { offset = new Vector3(-8.92f, 0f, -12.63f), forward = Vector3.left },
 					new TrackJoint() { offset = new Vector3(8.92f, 0f, -12.63f), forward = Vector3.right },
+				}
+			}
+		},
+		{
+			8, new TrackObject()
+			{
+				type = 8,
+				joints = new TrackJoint[2]
+				{
+					new TrackJoint() { offset = new Vector3(0f, 0f, 7.5f), forward = Vector3.forward },
+					new TrackJoint() { offset = new Vector3(0f, 0f, -7.5f), forward = Vector3.back }
+				}
+			}
+		},
+		{
+			9, new TrackObject()
+			{
+				type = 9,
+				joints = new TrackJoint[2]
+				{
+					new TrackJoint() { offset = new Vector3(0f, 0f, 7.5f), forward = Vector3.forward },
+					new TrackJoint() { offset = new Vector3(0f, 0f, -7.5f), forward = Vector3.back }
 				}
 			}
 		}
@@ -233,6 +253,7 @@ public class LevelEditor : MonoBehaviour
 	private void Start()
 	{
 		var serializerObject = GameObject.FindGameObjectWithTag("Serializer");
+		objects = new List<LevelObject>();
 		if (serializerObject == null) // assume we're debugging
 		{
 			if (debugLevelEditor)
@@ -252,7 +273,6 @@ public class LevelEditor : MonoBehaviour
 			Load();
 		}
 		moveModeText.text = moveState == EditorState.Simple ? "Simple" : "Advanced";
-		objects = new List<LevelObject>();
 		camera = GetComponent<Camera>();
 		gizmo = Instantiate(gizmoPrefab, transform.forward * -1000f, Quaternion.identity);
 		preview = Instantiate(prefabList.Prefabs[0], Vector3.zero, Quaternion.identity);
@@ -281,8 +301,6 @@ public class LevelEditor : MonoBehaviour
 
 	private void Update()
 	{
-		//Debug.Log("Poop");
-		//Debug.Log(EventSystem.current.currentSelectedGameObject);
 		if (EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.tag == "InputField")
 			return;
 		if (Input.GetButtonDown("SwitchMode"))
@@ -320,6 +338,9 @@ public class LevelEditor : MonoBehaviour
 			case EditorState.Advanced:
 				if (selectedObject != null)
 				{
+					if(Input.GetKeyDown(KeyCode.Delete)){
+						Destroy(selectedObject);
+					}
 					if (Physics.Raycast(camera.ScreenPointToRay(Input.mousePosition), out hit, 1000f, gizmoLayer))
 					{
 						if (selectedObject != null && hit.collider.tag == "Gizmo")
@@ -568,7 +589,32 @@ public class LevelEditor : MonoBehaviour
 
 	private void Load()
 	{
-		objects = serializer.LoadLevel();
+		var objectsPlain = serializer.LoadLevel();
+		foreach(var obj in objectsPlain)
+		{
+			if(trackObjects.ContainsKey(obj.type))
+			{
+				var newTrack = new TrackObject(trackObjects[obj.type]);
+				newTrack.position = obj.position;
+				newTrack.rotation = obj.rotation;
+				for (int i = 0; i < newTrack.joints.Length; i++)
+				{
+					var joint = newTrack.joints[i];
+					joint.takenBy = Instantiate(prefabList.Prefabs[4]);
+					joint.takenBy.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
+					joint.takenBy.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(newTrack, i);
+					joint.takenBy.tag = "RoadPreview";
+					joint.takenBy.transform.GetChild(0).tag = "RoadPreview";
+				}
+
+				objects.Add(newTrack);
+			}
+			else 
+			{
+
+				objects.Add(obj);
+			}
+		}
 		if(objects == null)
 		{
 			objects = new List<LevelObject>();

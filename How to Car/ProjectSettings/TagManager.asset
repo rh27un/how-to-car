@@ -9,6 +9,8 @@ TagManager:
   - RoadPreview
   - Serializer
   - InputField
+  - UnorderedCheckpoint
+  - FinishLine
   layers:
   - Default
   - TransparentFX

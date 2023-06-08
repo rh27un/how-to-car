@@ -15,6 +15,7 @@ public enum GameState
 public class GameManager : MonoBehaviour
 {
 	protected float startTime;
+	protected float finishTime;
 	protected GameState state = GameState.Unstarted;
 	[SerializeField]
 	protected GameObject preGameMenu;
@@ -27,7 +28,9 @@ public class GameManager : MonoBehaviour
 	[SerializeField]
 	protected TMP_Text gameTimer;
 	[SerializeField]
-	protected TMP_Text endTime;
+	protected TMP_Text endTimer;
+	protected int numUnorderedCheckpoints;
+	protected int numClearedUnorderedCheckpoints;
 
 	private void Start()
 	{
@@ -36,6 +39,37 @@ public class GameManager : MonoBehaviour
 		postGameMenu.SetActive(false);
 		pauseMenu.SetActive(false);
 		hud.SetActive(false);
+		numUnorderedCheckpoints = GameObject.FindGameObjectsWithTag("UnorderedCheckpoint").Length;
+		numClearedUnorderedCheckpoints = 0;
+	}
+
+	public void ClearUnorderedCheckpoint(GameObject checkpointObject){
+		// Increment cleared checkpoints
+		numClearedUnorderedCheckpoints++;
+		Destroy(checkpointObject);
+		Debug.Log("Cleared " + numClearedUnorderedCheckpoints + " out of " + numUnorderedCheckpoints + " checkpoints");
+	}
+
+	public bool CrossFinishLine(GameObject finishLine){
+		Debug.Log("Crossed Finish Line");
+		if(numClearedUnorderedCheckpoints < numUnorderedCheckpoints){
+			Debug.Log("But not enough checkpoints were crossed");
+			return false;
+		}
+		Debug.Log("and finished the game");
+		Destroy(finishLine);
+		FinishGame();
+		return true;
+	}
+
+	public void FinishGame(){
+		finishTime = Time.time;
+		state = GameState.Finished;
+		preGameMenu.SetActive(false);
+		postGameMenu.SetActive(true);
+		pauseMenu.SetActive(false);
+		hud.SetActive(false);
+		endTimer.text = TimeSpan.FromSeconds(finishTime - startTime).ToString(@"mm\:ss\.ff");
 	}
 	public void StartGame() {
 		startTime = Time.time;

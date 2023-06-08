@@ -24,7 +24,7 @@ public class CamFollow : MonoBehaviour
     void FixedUpdate()
     {
         Vector3 trajectory = carBody.velocity;
-        camera.orthographicSize = 5 + (trajectory.magnitude * 0.5f);
+        camera.orthographicSize = Mathf.Lerp(camera.orthographicSize, 5 + (trajectory.magnitude * 0.5f), stiffness);
         transform.position = Vector3.Lerp(transform.position, car.position + trajectory + camOffset, stiffness);
     }
 }

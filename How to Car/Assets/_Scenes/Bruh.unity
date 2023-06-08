@@ -787,7 +787,7 @@ MonoBehaviour:
   gizmoSize: 0.1
   advancedMoveSpeed: 0.2
   levelName: {fileID: 1794645861}
-  debugLevelEditor: 0
+  debugLevelEditor: 1
 --- !u!1 &344592100
 GameObject:
   m_ObjectHideFlags: 0
@@ -1040,7 +1040,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   camOffset: {x: -488, y: 633, z: -438}
-  stiffness: 0.631
+  stiffness: 0.475
 --- !u!81 &505766194
 AudioListener:
   m_ObjectHideFlags: 0
@@ -1828,7 +1828,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2061140402}
   m_HandleRect: {fileID: 2061140401}
   m_Direction: 2
-  m_Value: 7801.7524
+  m_Value: 8076.8975
   m_Size: 0.83918035
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -3684,8 +3684,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1584656807}
   m_HandleRect: {fileID: 1584656806}
   m_Direction: 0
-  m_Value: 1
-  m_Size: 0.9999987
+  m_Value: -0.044444446
+  m_Size: 0.99999714
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -4896,7 +4896,7 @@ GameObject:
   - component: {fileID: 1902079032}
   m_Layer: 0
   m_Name: GameManager
-  m_TagString: Untagged
+  m_TagString: GameController
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4932,7 +4932,7 @@ MonoBehaviour:
   pauseMenu: {fileID: 2094858449}
   hud: {fileID: 1489697638}
   gameTimer: {fileID: 622160876}
-  endTime: {fileID: 614434531}
+  endTimer: {fileID: 614434531}
 --- !u!1 &2061140400
 GameObject:
   m_ObjectHideFlags: 0
@@ -5144,7 +5144,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.005908536, y: -229576.11}
+  m_AnchoredPosition: {x: 0.0010414124, y: -237673.62}
   m_SizeDelta: {x: -0.00097656, y: 183}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &2085993277
@@ -5335,7 +5335,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7549398428204265478, guid: d7a0e11da9a0a9b41b9e30c4a1f0ce16, type: 3}
       propertyPath: maxSteeringAngle
-      value: 20
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 7549398428204265478, guid: d7a0e11da9a0a9b41b9e30c4a1f0ce16, type: 3}
       propertyPath: axleInfos.Array.data[0].motor
