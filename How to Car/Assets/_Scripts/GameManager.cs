@@ -29,11 +29,25 @@ public class GameManager : MonoBehaviour
 	protected TMP_Text gameTimer;
 	[SerializeField]
 	protected TMP_Text endTimer;
+	[SerializeField]
+	protected TMP_Text levelName;
+	[SerializeField]
+	protected TMP_Text levelDescription;
+	[SerializeField]
+	protected TMP_Text objective;
 	protected int numUnorderedCheckpoints;
 	protected int numClearedUnorderedCheckpoints;
+	protected Serializer serializer;
 
 	private void Start()
 	{
+		var serializerObject = GameObject.FindGameObjectWithTag("Serializer");
+		if(serializerObject != null){
+			serializer = serializerObject.GetComponent<Serializer>();
+			levelName.text = serializer.GetLevelName();
+			levelDescription.text = serializer.GetLevelDescription();
+			objective.text = serializer.GetLevelDescription();
+		}
 		state = GameState.Unstarted;
 		preGameMenu.SetActive(true);
 		postGameMenu.SetActive(false);

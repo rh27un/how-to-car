@@ -584,7 +584,13 @@ public class LevelEditor : MonoBehaviour
 
 	public void Save()
 	{
-		serializer.filePath = levelName.text;
+		serializer.SetLevelName(levelName.text);
+		serializer.SetLevelDescription(levelDescription.text);
+		string fileName = levelName.text.Replace(" ", string.Empty);
+		if(!fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase)){
+			fileName += ".json";
+		}
+		serializer.filePath = fileName;
 		serializer.SaveLevel(objects);
 	}
 

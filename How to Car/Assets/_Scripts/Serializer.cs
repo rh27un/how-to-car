@@ -124,10 +124,21 @@ public class Serializer : MonoBehaviour
 
 	protected LevelData levelData;
 
+	public string directory;
+
+	protected string[] levels;
 
 	// Start is called before the first frame update
 	void Start()
 	{
+		var levels = Directory.EnumerateFiles(directory, "*.json").ToArray();
+		
+		/*
+		var button = Instantiate(buttonPrefab, content.transform.position, content.rotation, content);
+			button.GetComponentInChildren<TMP_Text>().text = prefabList.Prefabs[i].name;
+			button.GetComponent<Button>().onClick.AddListener(delegate { SetType(type); });
+		}
+		*/
 		if(gameObject.tag == "Serializer")
 		{
 			DontDestroyOnLoad(gameObject);
@@ -135,6 +146,30 @@ public class Serializer : MonoBehaviour
 		}
 	}
 
+	public string[] GetLevels(){
+		return levels;
+	}
+
+	public LevelData GetLevel(string levelPath){
+		if (File.Exists(levelPath))
+		{
+			string json = File.ReadAllText(levelPath);
+			try {
+				levelData = JsonUtility.FromJson<LevelData>(json);
+				var objects = levelData.objects.ToList();
+				Debug.Log("Succesfully loaded " + levelPath + " in " + gameMode.ToString() + " mode");
+				return levelData;
+			} catch(Exception x){
+				Debug.LogError("Error loading file " + levelPath + ", might be outdated");
+				return null;
+			}
+		}
+		else
+		{
+			Debug.LogWarning("The file " + levelPath + " could not be found");
+			return null;
+		}
+	}
 
 	void OnSceneLoaded(Scene scene, LoadSceneMode mode)
 	{
@@ -177,15 +212,14 @@ public class Serializer : MonoBehaviour
 			obj.position = obj.transform.position;
 			obj.rotation = obj.transform.rotation;
 		}
-		LevelData fakeData = new LevelData()
-		{
-			guid = Guid.NewGuid().ToString(),
-			prettyName = "Fake Level Data",
-			description = "This Data is Fake",
-			objects = objects.ToArray()
-		};
-		string json = JsonUtility.ToJson(fakeData, true);
-		File.WriteAllText(filePath, json);
+		if(levelData != null){
+			levelData.guid = Guid.NewGuid().ToString();
+			levelData.objects = objects.ToArray();
+			string json = JsonUtility.ToJson(levelData, true);
+			File.WriteAllText(filePath, json);
+		} else {
+			Debug.LogError("Failed to save level");
+		}
 	}
 
 	public List<LevelObject> LoadLevel()
@@ -194,8 +228,8 @@ public class Serializer : MonoBehaviour
 		{
 			string json = File.ReadAllText(filePath);
 			try {
-				LevelData data = JsonUtility.FromJson<LevelData>(json);
-				var objects = data.objects.ToList();
+				levelData = JsonUtility.FromJson<LevelData>(json);
+				var objects = levelData.objects.ToList();
 				Debug.Log("Succesfully loaded " + filePath + " in " + gameMode.ToString() + " mode");
 				return objects;
 			} catch(Exception x){
@@ -211,10 +245,29 @@ public class Serializer : MonoBehaviour
 	}
 
 	public void SetLevelName(string name){
+		if(levelData == null)
+			levelData = new LevelData();
 		levelData.prettyName = name;
 	}
 
 	public void SetLevelDescription(string description){
+		if(levelData == null)
+			levelData = new LevelData();
 		levelData.description = description;
 	}
+
+	public string GetLevelName(){
+		if(levelData != null)
+		return levelData.prettyName;
+		else
+		return "No level data found";
+	}
+
+	public string GetLevelDescription(){
+		if(levelData != null)
+		return levelData.description;
+		else
+		return "No level data found";
+	}
+	
 }
