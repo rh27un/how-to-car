@@ -69,7 +69,8 @@ public class LevelEditor : MonoBehaviour
 
 	[SerializeField]
 	protected TMP_InputField levelName;
-
+[SerializeField]
+	protected TMP_InputField levelDescription;
 	Dictionary<int, TrackObject> trackObjects = new Dictionary<int, TrackObject>()
 	{
 		{
@@ -590,6 +591,8 @@ public class LevelEditor : MonoBehaviour
 	private void Load()
 	{
 		var objectsPlain = serializer.LoadLevel();
+		if(objectsPlain == null)
+			return;
 		foreach(var obj in objectsPlain)
 		{
 			if(trackObjects.ContainsKey(obj.type))

@@ -18,6 +18,11 @@ public class LevelObject
 }
 
 
+[Serializable]
+public class ClearData
+{
+	public string playerName;
+}
 public class TrackJoint
 {
 	public TrackJoint() { }
@@ -94,6 +99,14 @@ public static class JsonArray
 	}
 }
 
+[Serializable]
+public class LevelData{
+	public string guid;
+	public string prettyName;
+	public string description;
+	public LevelObject[] objects;
+}
+
 public enum GameMode
 {
 	Play = 0,
@@ -108,6 +121,10 @@ public class Serializer : MonoBehaviour
 
 	public string filePath;
 	public GameMode gameMode;
+
+	protected LevelData levelData;
+
+
 	// Start is called before the first frame update
 	void Start()
 	{
@@ -160,7 +177,14 @@ public class Serializer : MonoBehaviour
 			obj.position = obj.transform.position;
 			obj.rotation = obj.transform.rotation;
 		}
-		string json = JsonArray.ToJson(objects.ToArray(), true);
+		LevelData fakeData = new LevelData()
+		{
+			guid = Guid.NewGuid().ToString(),
+			prettyName = "Fake Level Data",
+			description = "This Data is Fake",
+			objects = objects.ToArray()
+		};
+		string json = JsonUtility.ToJson(fakeData, true);
 		File.WriteAllText(filePath, json);
 	}
 
@@ -169,15 +193,28 @@ public class Serializer : MonoBehaviour
 		if (File.Exists(filePath))
 		{
 			string json = File.ReadAllText(filePath);
-			LevelObject[] importedObjects = JsonArray.FromJson<LevelObject>(json);
-			var objects = importedObjects.ToList();
-			Debug.Log("Succesfully loaded " + filePath + " in " + gameMode.ToString() + " mode");
-			return objects;
+			try {
+				LevelData data = JsonUtility.FromJson<LevelData>(json);
+				var objects = data.objects.ToList();
+				Debug.Log("Succesfully loaded " + filePath + " in " + gameMode.ToString() + " mode");
+				return objects;
+			} catch(Exception x){
+				Debug.LogError("Error loading file " + filePath + ", might be outdated");
+				return null;
+			}
 		}
 		else
 		{
-			Debug.LogWarning("Cannot load " + filePath);
+			Debug.LogWarning("The file " + filePath + " could not be found");
 			return null;
 		}
+	}
+
+	public void SetLevelName(string name){
+		levelData.prettyName = name;
+	}
+
+	public void SetLevelDescription(string description){
+		levelData.description = description;
 	}
 }
