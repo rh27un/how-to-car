@@ -35,6 +35,8 @@ public class GameManager : MonoBehaviour
 	protected TMP_Text levelDescription;
 	[SerializeField]
 	protected TMP_Text objective;
+	[SerializeField]
+	protected GameObject newPB;
 	protected int numUnorderedCheckpoints;
 	protected int numClearedUnorderedCheckpoints;
 	protected Serializer serializer;
@@ -83,7 +85,11 @@ public class GameManager : MonoBehaviour
 		postGameMenu.SetActive(true);
 		pauseMenu.SetActive(false);
 		hud.SetActive(false);
-		endTimer.text = TimeSpan.FromSeconds(finishTime - startTime).ToString(@"mm\:ss\.ff");
+		float timeTooken = finishTime - startTime;
+		endTimer.text = TimeSpan.FromSeconds(timeTooken).ToString(@"mm\:ss\.ff");
+		newPB.SetActive(serializer.FinishLevel(timeTooken));
+		
+			
 	}
 	public void StartGame() {
 		startTime = Time.time;

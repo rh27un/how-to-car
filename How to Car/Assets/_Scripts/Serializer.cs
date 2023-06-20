@@ -21,7 +21,39 @@ public class LevelObject
 [Serializable]
 public class ClearData
 {
+	public ClearData()
+	{
+		playerName = "Test";
+		data = new List<LevelClearData>()
+		{
+		};
+	}
 	public string playerName;
+	[SerializeField]
+	protected List<LevelClearData> data;
+
+	public void Add(LevelClearData _data)
+	{
+		data.Add(_data);
+	}
+	public LevelClearData this[string guid]
+	{
+		get { return data.SingleOrDefault(d => d.levelGUID == guid);}
+	}
+}
+
+[Serializable]
+public class LevelClearData
+{
+	public LevelClearData(string _levelGUID, float time, int _stars)
+	{
+		levelGUID = _levelGUID;
+		personalBestTime = time;
+		stars = _stars;
+	}
+	public string levelGUID;
+	public float personalBestTime;
+	public int stars;
 }
 public class TrackJoint
 {
@@ -35,7 +67,6 @@ public class TrackJoint
 	public Vector3 forward;
 	public GameObject takenBy;
 }
-
 
 public class TrackObject : LevelObject
 {
@@ -128,17 +159,15 @@ public class Serializer : MonoBehaviour
 
 	protected string[] levels;
 
+	[SerializeField]
+	protected string saveDataPath;
+
 	// Start is called before the first frame update
-	void Start()
+	void Awake() 
 	{
-		var levels = Directory.EnumerateFiles(directory, "*.json").ToArray();
+		levels = Directory.EnumerateFiles(directory, "*.json").ToArray();
+
 		
-		/*
-		var button = Instantiate(buttonPrefab, content.transform.position, content.rotation, content);
-			button.GetComponentInChildren<TMP_Text>().text = prefabList.Prefabs[i].name;
-			button.GetComponent<Button>().onClick.AddListener(delegate { SetType(type); });
-		}
-		*/
 		if(gameObject.tag == "Serializer")
 		{
 			DontDestroyOnLoad(gameObject);
@@ -150,7 +179,45 @@ public class Serializer : MonoBehaviour
 		return levels;
 	}
 
-	public LevelData GetLevel(string levelPath){
+	public bool FinishLevel(float time)
+	{
+		if (File.Exists(saveDataPath))
+		{
+			var json = File.ReadAllText(saveDataPath);
+			var clearData = JsonUtility.FromJson<ClearData>(json);
+			var levelClearData = clearData[levelData.guid];
+			if (levelClearData != null)
+			{
+				if (time < levelClearData.personalBestTime)
+				{
+					levelClearData.personalBestTime = time;
+					json = JsonUtility.ToJson(clearData);
+					File.WriteAllText(saveDataPath, json);
+					return true;
+				}
+			}
+			else
+			{
+				clearData.Add(new LevelClearData(levelData.guid, time, 0));
+				json = JsonUtility.ToJson(clearData);
+				File.WriteAllText(saveDataPath, json);
+			}
+		}
+		else
+		{
+			var clearData = new ClearData();
+			clearData.Add(new LevelClearData(levelData.guid, time, 0));
+			var json = JsonUtility.ToJson(clearData);
+			File.WriteAllText(saveDataPath, json);
+		}
+		return false;
+	}
+	
+	public void LoadLevel(int index){
+
+	}
+	public LevelData GetLevel(int index){
+		var levelPath = levels[index];
 		if (File.Exists(levelPath))
 		{
 			string json = File.ReadAllText(levelPath);
@@ -173,11 +240,7 @@ public class Serializer : MonoBehaviour
 
 	void OnSceneLoaded(Scene scene, LoadSceneMode mode)
 	{
-		if (scene.buildIndex != 1)
-		{// main scene
-			Destroy(gameObject);
-			return;
-		}
+		
 		switch (gameMode)
 		{
 			case GameMode.Play:
