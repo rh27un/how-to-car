@@ -28,6 +28,13 @@ public class ClearData
 		{
 		};
 	}
+	public ClearData(string name)
+	{
+		playerName = name;
+		data = new List<LevelClearData>()
+		{
+		};
+	}
 	public string playerName;
 	[SerializeField]
 	protected List<LevelClearData> data;
@@ -159,24 +166,86 @@ public class Serializer : MonoBehaviour
 
 	protected string[] levels;
 
-	[SerializeField]
 	protected string saveDataPath;
+	[SerializeField]
+	protected string profileDirectory;
+	protected string[] profiles;
+
+	protected ClearData selectedProfile;
 
 	// Start is called before the first frame update
 	void Awake() 
 	{
-		levels = Directory.EnumerateFiles(directory, "*.json").ToArray();
-
-		
 		if(gameObject.tag == "Serializer")
 		{
+			if (GameObject.FindGameObjectsWithTag("Serializer").Length > 1)
+			{
+				Destroy(gameObject);
+				return;
+			}
 			DontDestroyOnLoad(gameObject);
 			SceneManager.sceneLoaded += OnSceneLoaded;
 		}
+		levels = Directory.EnumerateFiles(directory, "*.json").ToArray();
+		profiles = Directory.EnumerateFiles(profileDirectory, "*.json").ToArray();
+
 	}
 
 	public string[] GetLevels(){
 		return levels;
+	}
+
+	public string[] GetProfiles()
+	{
+		return profiles;
+	}
+
+	public ClearData GetProfile(int index)
+	{
+		var profilePath = profiles[index];
+		if (File.Exists(profilePath))
+		{
+			string json = File.ReadAllText(profilePath);
+			try
+			{
+				var profile = JsonUtility.FromJson<ClearData>(json);
+				return profile;
+			}
+			catch (Exception x)
+			{
+				Debug.LogError("Error loading file " + profilePath + ", might be outdated");
+				return null;
+			}
+		}
+		else
+		{
+			Debug.LogWarning("The file " + profilePath + " could not be found");
+			return null;
+		}
+	}
+
+	public bool SelectProfile(int index)
+	{
+		saveDataPath = profiles[index];
+		if (File.Exists(saveDataPath))
+		{
+			string json = File.ReadAllText(saveDataPath);
+			try
+			{
+				selectedProfile = JsonUtility.FromJson<ClearData>(json);
+				return true;
+			}
+			catch (Exception x)
+			{
+				Debug.LogError("Error loading file " + saveDataPath + ", might be outdated");
+				return false;
+			}
+		}
+		else
+		{
+			Debug.LogWarning("The file " + saveDataPath + " could not be found");
+			return false;
+		}
 	}
 
 	public bool FinishLevel(float time)
@@ -212,6 +281,15 @@ public class Serializer : MonoBehaviour
 		}
 		return false;
 	}
+
+	public void CreateNewProfile(string name)
+	{
+		string fileName = Guid.NewGuid().ToString();
+		selectedProfile = new ClearData(name);
+		var json = JsonUtility.ToJson(selectedProfile);
+		File.WriteAllText($"{profileDirectory}/{fileName}.json", json);
+		profiles = Directory.GetFiles(profileDirectory, "*.json").ToArray();
+	}
 	
 	public void LoadLevel(int index){
 
@@ -223,8 +301,7 @@ public class Serializer : MonoBehaviour
 			string json = File.ReadAllText(levelPath);
 			try {
 				levelData = JsonUtility.FromJson<LevelData>(json);
-				var objects = levelData.objects.ToList();
-				Debug.Log("Succesfully loaded " + levelPath + " in " + gameMode.ToString() + " mode");
+				
 				return levelData;
 			} catch(Exception x){
 				Debug.LogError("Error loading file " + levelPath + ", might be outdated");
@@ -240,7 +317,8 @@ public class Serializer : MonoBehaviour
 
 	void OnSceneLoaded(Scene scene, LoadSceneMode mode)
 	{
-		
+		if (scene.buildIndex == 0)
+			return;
 		switch (gameMode)
 		{
 			case GameMode.Play:

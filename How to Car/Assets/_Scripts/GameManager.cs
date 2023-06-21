@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum GameState
 {
@@ -78,6 +79,11 @@ public class GameManager : MonoBehaviour
 		return true;
 	}
 
+	public void ReturnToMenu()
+	{
+		SceneManager.LoadScene(0);
+	}
+
 	public void FinishGame(){
 		finishTime = Time.time;
 		state = GameState.Finished;
@@ -88,8 +94,6 @@ public class GameManager : MonoBehaviour
 		float timeTooken = finishTime - startTime;
 		endTimer.text = TimeSpan.FromSeconds(timeTooken).ToString(@"mm\:ss\.ff");
 		newPB.SetActive(serializer.FinishLevel(timeTooken));
-		
-			
 	}
 	public void StartGame() {
 		startTime = Time.time;
