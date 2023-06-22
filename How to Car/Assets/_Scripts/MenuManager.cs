@@ -195,7 +195,7 @@ public class MenuManager : MonoBehaviour
 
 	public void LoadGame()
 	{
-		serializer.filePath = filePath.text;
+		serializer.SetFilePathManually(filePath.text);
 		serializer.gameMode = GameMode.Play;
 		SceneManager.LoadScene("Bruh");
 	}
@@ -207,7 +207,7 @@ public class MenuManager : MonoBehaviour
 	}
 	public void LoadEditor()
 	{
-		serializer.filePath = filePath.text;
+		serializer.SetFilePathManually(filePath.text);
 		serializer.gameMode = GameMode.Editor;
 		SceneManager.LoadScene("Bruh");
 	}

@@ -153,15 +153,15 @@ public class LevelEditor : MonoBehaviour
 		// Find the position of the old joint
 		Vector3 pos = old.position + oldJoint.offset;
 		// Place the new joint in that position
-		_new.transform.position = pos + newJoint.offset;
+		_new.gameObject.transform.position = pos + newJoint.offset;
 		// rotation that points in the same direction as the old joint we want to connect to
 		Quaternion quaternion = Quaternion.LookRotation(oldJoint.forward, Vector3.up);
 		quaternion *= old.rotation;
 		quaternion *= Quaternion.Inverse(Quaternion.LookRotation(-newJoint.forward, Vector3.up));
-		_new.transform.rotation = quaternion;
-		Vector3 oldJointWorldPos = old.transform.TransformPoint(oldJoint.offset);
-		Vector3 newJointWorldOffset = _new.transform.position - _new.transform.TransformPoint(newJoint.offset);
-		_new.transform.position = oldJointWorldPos + newJointWorldOffset;
+		_new.gameObject.transform.rotation = quaternion;
+		Vector3 oldJointWorldPos = old.gameObject.transform.TransformPoint(oldJoint.offset);
+		Vector3 newJointWorldOffset = _new.gameObject.transform.position - _new.gameObject.transform.TransformPoint(newJoint.offset);
+		_new.gameObject.transform.position = oldJointWorldPos + newJointWorldOffset;
 
 	}
 
@@ -208,7 +208,7 @@ public class LevelEditor : MonoBehaviour
 						trackPreview.GetComponentInChildren<MeshFilter>().sharedMesh = mesh;
 						trackPreview.GetComponentInChildren<MeshCollider>().sharedMesh = mesh;
 						track.joints[i].takenBy.GetComponentInChildren<MeshRenderer>().enabled = true;
-						PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[type], trackPreview.transform), currentJoint);
+						PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[type], trackPreview), currentJoint);
 					}
 				}
 			}
@@ -340,6 +340,7 @@ public class LevelEditor : MonoBehaviour
 				if (selectedObject != null)
 				{
 					if(Input.GetKeyDown(KeyCode.Delete)){
+						objects.Remove(objects.SingleOrDefault(o => o.gameObject == selectedObject || o.gameObject.transform.IsChildOf(selectedObject.transform)));
 						Destroy(selectedObject);
 					}
 					if (Physics.Raycast(camera.ScreenPointToRay(Input.mousePosition), out hit, 1000f, gizmoLayer))
@@ -352,9 +353,18 @@ public class LevelEditor : MonoBehaviour
 								if (Input.GetMouseButtonDown(0) && !IsPointerOverUIObject())
 								{
 									string name = hit.collider.gameObject.name;
-									if (name == "up") selectedAxis = Vector3.up;
-									else if (name == "right") selectedAxis = Vector3.right;
-									else if (name == "forward") selectedAxis = Vector3.forward;
+									if (name == "up")
+										selectedAxis = Vector3.up;
+									else if (name == "right")
+										selectedAxis = Vector3.right;
+									else if (name == "forward")
+										selectedAxis = Vector3.forward;
+									else if (name == "yaw")
+										selectedAxis = -Vector3.up;
+									else if (name == "roll")
+										selectedAxis = -Vector3.forward;
+									else if (name == "pitch")
+										selectedAxis = -Vector3.right;
 								}
 							}
 							break;
@@ -369,6 +379,10 @@ public class LevelEditor : MonoBehaviour
 						if (Input.GetMouseButtonDown(0) && !IsPointerOverUIObject())
 						{
 							selectedObject = hit.collider.gameObject;
+							while(selectedObject.transform.parent != null)
+							{
+								selectedObject = selectedObject.transform.parent.gameObject;
+							}
 							gizmo.transform.position = selectedObject.transform.position;
 						}
 					}
@@ -377,11 +391,17 @@ public class LevelEditor : MonoBehaviour
 				if (selectedAxis != Vector3.zero)
 				{
 					if (selectedAxis == Vector3.right)
-						selectedObject.transform.position += selectedAxis * Input.GetAxis("Mouse X") * advancedMoveSpeed * camera.orthographicSize;
+						selectedObject.transform.position += selectedAxis * Input.GetAxis("Mouse Y") * advancedMoveSpeed * camera.orthographicSize;
 					else if (selectedAxis == Vector3.forward)
 						selectedObject.transform.position -= selectedAxis * Input.GetAxis("Mouse X") * advancedMoveSpeed * camera.orthographicSize;
 					else if (selectedAxis == Vector3.up)
-						selectedObject.transform.position += selectedAxis * Input.GetAxis("Mouse Y") * advancedMoveSpeed * camera.orthographicSize;
+						selectedObject.transform.position += selectedAxis * Input.GetAxis("Mouse X") * advancedMoveSpeed * camera.orthographicSize;
+					else if (selectedAxis == -Vector3.right)
+						selectedObject.transform.Rotate(selectedAxis, Input.GetAxis("Mouse Y"), Space.World);
+					else if (selectedAxis == -Vector3.forward)
+						selectedObject.transform.Rotate(selectedAxis, Input.GetAxis("Mouse Y"), Space.World);
+					else if (selectedAxis == -Vector3.up)
+						selectedObject.transform.Rotate(selectedAxis, Input.GetAxis("Mouse X"), Space.World);
 
 					if (Input.GetMouseButtonUp(0) && !IsPointerOverUIObject())
 					{
@@ -427,7 +447,7 @@ public class LevelEditor : MonoBehaviour
 										trackPreview.GetComponentInChildren<MeshFilter>().sharedMesh = mesh;
 										trackPreview.GetComponentInChildren<MeshCollider>().sharedMesh = mesh;
 										track.joints[i].takenBy.GetComponentInChildren<MeshRenderer>().enabled = true;
-										PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[typeToSpawn], trackPreview.transform), currentJoint);
+										PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[typeToSpawn], trackPreview.gameObject), currentJoint);
 									}
 								}
 							}
@@ -449,7 +469,7 @@ public class LevelEditor : MonoBehaviour
 										trackPreview.GetComponentInChildren<MeshFilter>().sharedMesh = mesh;
 										trackPreview.GetComponentInChildren<MeshCollider>().sharedMesh = mesh;
 										track.joints[i].takenBy.GetComponentInChildren<MeshRenderer>().enabled = true;
-										PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[typeToSpawn], trackPreview.transform), currentJoint);
+										PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[typeToSpawn], trackPreview), currentJoint);
 									}
 								}
 							}
@@ -467,9 +487,9 @@ public class LevelEditor : MonoBehaviour
 						if (trackObjects.ContainsKey(typeToSpawn) && hit.collider.tag == "RoadPreview")
 						{
 							var newTrack = new TrackObject(trackObjects[typeToSpawn]);
-							newTrack.transform = newObject.transform;
-							newTrack.transform.position = hit.collider.transform.parent.position;
-							newTrack.transform.rotation = hit.collider.transform.parent.rotation;
+							newTrack.gameObject = newObject;
+							newObject.transform.position = hit.collider.transform.parent.position;
+							newObject.transform.rotation = hit.collider.transform.parent.rotation;
 							newTrack.position = newObject.transform.position;
 							newTrack.rotation = newObject.transform.rotation;
 							Destroy(hit.collider.transform.parent.gameObject);
@@ -491,7 +511,7 @@ public class LevelEditor : MonoBehaviour
 						else if (trackObjects.ContainsKey(typeToSpawn))
 						{
 							var newTrack = new TrackObject(trackObjects[typeToSpawn]);
-							newTrack.transform = newObject.transform;
+							newTrack.gameObject = newObject;
 							newTrack.position = newObject.transform.position;
 							newTrack.rotation = newObject.transform.rotation;
 							for (int i = 0; i < newTrack.joints.Length; i++)
@@ -508,7 +528,7 @@ public class LevelEditor : MonoBehaviour
 						}
 						else
 						{
-							objects.Add(new LevelObject() { type = typeToSpawn, transform = newObject.transform, position = newObject.transform.position, rotation = newObject.transform.rotation });
+							objects.Add(new LevelObject() { type = typeToSpawn, gameObject = newObject, position = newObject.transform.position, rotation = newObject.transform.rotation });
 						}
 
 						if (!multiPlace)
@@ -546,7 +566,7 @@ public class LevelEditor : MonoBehaviour
 										trackPreview.GetComponentInChildren<MeshFilter>().sharedMesh = mesh;
 										trackPreview.GetComponentInChildren<MeshCollider>().sharedMesh = mesh;
 										track.joints[i].takenBy.GetComponentInChildren<MeshRenderer>().enabled = true;
-										PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[typeToSpawn], trackPreview.transform), currentJoint);
+										PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[typeToSpawn], trackPreview), currentJoint);
 									}
 								}
 							}
@@ -573,6 +593,10 @@ public class LevelEditor : MonoBehaviour
 
 	private void PlaceObject(GameObject go, RaycastHit info)
 	{
+		while(go.transform.parent != null)
+		{
+			go = go.transform.parent.gameObject;
+		}
 		float distance = 10f;
 		Vector3 normal = info.normal;
 		go.transform.position = info.point + normal * distance;
@@ -586,11 +610,7 @@ public class LevelEditor : MonoBehaviour
 	{
 		serializer.SetLevelName(levelName.text);
 		serializer.SetLevelDescription(levelDescription.text);
-		string fileName = levelName.text.Replace(" ", string.Empty);
-		if(!fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase)){
-			fileName += ".json";
-		}
-		serializer.filePath = fileName;
+		serializer.SetFilePathManually(levelName.text);
 		serializer.SaveLevel(objects);
 	}
 
@@ -631,7 +651,7 @@ public class LevelEditor : MonoBehaviour
 		foreach (var obj in objects)
 		{
 			var newObject = Instantiate(prefabList.Prefabs[obj.type], obj.position, obj.rotation);
-			obj.transform = newObject.transform;
+			obj.gameObject = newObject;
 		}
 	}
 }

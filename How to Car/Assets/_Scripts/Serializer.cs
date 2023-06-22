@@ -11,8 +11,7 @@ using UnityEngine.SceneManagement;
 public class LevelObject
 {
 	public int type;
-	[NonSerialized]
-	public Transform transform; // Keep a reference to the object's transform so we can keep track of changes made in the editor
+	public GameObject gameObject; // Keep a reference to the object's transform so we can keep track of changes made in the editor
 	public Vector3 position;
 	public Quaternion rotation;
 }
@@ -81,7 +80,7 @@ public class TrackObject : LevelObject
 	public TrackObject(TrackObject old)
 	{
 		this.type = old.type;
-		this.transform = old.transform;
+		this.gameObject = old.gameObject;
 		this.position = old.position;
 		this.rotation = old.rotation;
 		this.joints = new TrackJoint[old.joints.Length];
@@ -91,12 +90,12 @@ public class TrackObject : LevelObject
 		}
 	}
 
-	public TrackObject(TrackObject old, Transform newTransform)
+	public TrackObject(TrackObject old, GameObject gameObject)
 	{
 		this.type = old.type;
-		this.transform = newTransform;
-		this.position = newTransform.position;
-		this.rotation = newTransform.rotation;
+		this.gameObject = gameObject;
+		this.position = gameObject.transform.position;
+		this.rotation = gameObject.transform.rotation;
 		this.joints = new TrackJoint[old.joints.Length];
 		for (int i = 0; i < old.joints.Length; i++)
 		{
@@ -282,6 +281,16 @@ public class Serializer : MonoBehaviour
 		return false;
 	}
 
+	public void SetFilePathManually(string text)
+	{
+		text = text.Replace(" ", string.Empty);
+		if (!text.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+		{
+			text += ".json";
+		}
+		filePath = $"{directory}/{text}";
+	}
+
 	public void CreateNewProfile(string name)
 	{
 		string fileName = Guid.NewGuid().ToString();
@@ -330,7 +339,7 @@ public class Serializer : MonoBehaviour
 					foreach (var obj in objects)
 					{
 						var newObject = Instantiate(prefabList.Prefabs[obj.type], obj.position, obj.rotation);
-						obj.transform = newObject.transform;
+						obj.gameObject = newObject;
 					}
 				}
 				break;
@@ -350,14 +359,14 @@ public class Serializer : MonoBehaviour
 	{
 		foreach (var obj in objects)
 		{
-			obj.position = obj.transform.position;
-			obj.rotation = obj.transform.rotation;
+			obj.position = obj.gameObject.transform.position;
+			obj.rotation = obj.gameObject.transform.rotation;
 		}
 		if(levelData != null){
 			levelData.guid = Guid.NewGuid().ToString();
 			levelData.objects = objects.ToArray();
 			string json = JsonUtility.ToJson(levelData, true);
-			File.WriteAllText(filePath, json);
+			File.WriteAllText($"{filePath}", json);
 		} else {
 			Debug.LogError("Failed to save level");
 		}
@@ -365,9 +374,9 @@ public class Serializer : MonoBehaviour
 
 	public List<LevelObject> LoadLevel()
 	{
-		if (File.Exists(filePath))
+		if (File.Exists($"{filePath}"))
 		{
-			string json = File.ReadAllText(filePath);
+			string json = File.ReadAllText($"{filePath}");
 			try {
 				levelData = JsonUtility.FromJson<LevelData>(json);
 				var objects = levelData.objects.ToList();
