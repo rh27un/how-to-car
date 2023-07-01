@@ -10,10 +10,13 @@ using UnityEngine.SceneManagement;
 [Serializable]
 public class LevelObject
 {
+	public int id; // for objects to reference each other. for simplicity, this is the same as the object's index in objects
 	public int type;
 	public GameObject gameObject; // Keep a reference to the object's transform so we can keep track of changes made in the editor
 	public Vector3 position;
 	public Quaternion rotation;
+	public int group_id; // objects can be grouped
+	public string data;	// string representation of special object data not covered in levelobject. 
 }
 
 

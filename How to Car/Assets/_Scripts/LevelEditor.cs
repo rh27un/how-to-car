@@ -591,6 +591,33 @@ public class LevelEditor : MonoBehaviour
 		//}
 	}
 
+	private void AddObject(GameObject _obj, int _type)
+	{
+		if (trackObjects.ContainsKey(_type))
+		{
+			TrackObject trobj = new TrackObject(trackObjects[typeToSpawn]);
+			trobj.gameObject = _obj;
+			trobj.position = _obj.transform.position;
+			trobj.rotation = _obj.transform.rotation;
+			for (int i = 0; i < trobj.joints.Length; i++)
+			{
+				var joint = trobj.joints[i];
+				joint.takenBy = Instantiate(prefabList.Prefabs[4]);
+				joint.takenBy.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
+				joint.takenBy.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(trobj, i);
+				joint.takenBy.tag = "RoadPreview";
+				joint.takenBy.transform.GetChild(0).tag = "RoadPreview";
+			}
+			objects.Add(trobj);
+			trobj.id = objects.IndexOf(trobj);
+		} else
+		{
+			LevelObject obj = new LevelObject() { type = _type, gameObject = _obj, position = _obj.transform.position, rotation = _obj.transform.rotation };
+			objects.Add(obj);
+			obj.id = objects.IndexOf(obj);
+		}
+
+	}
 	private void PlaceObject(GameObject go, RaycastHit info)
 	{
 		while(go.transform.parent != null)

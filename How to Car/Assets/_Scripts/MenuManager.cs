@@ -101,7 +101,7 @@ public class MenuManager : MonoBehaviour
 				var button = Instantiate(profileButton, profileContent);
 				contentHeight += button.GetComponent<RectTransform>().rect.height;
 				button.GetComponentInChildren<TMP_Text>().text = profile.playerName;
-				button.GetComponent<Button>().onClick.AddListener(delegate
+				button.GetComponent<Toggle>().onValueChanged.AddListener(delegate
 				{ SelectProfile(profileIndex); });
 			}
 		}
@@ -157,6 +157,7 @@ public class MenuManager : MonoBehaviour
 		levelEditorMenu.SetActive(false);
 		levelSelectMenu.SetActive(false);
 		filePath = playMenu.GetComponentInChildren<TMP_InputField>();
+		serializer.gameMode = GameMode.Play;
 	}
 
 	public void OptionsButton()
@@ -171,7 +172,10 @@ public class MenuManager : MonoBehaviour
 		playMenu.SetActive(false);
 		optionsMenu.SetActive(false);
 		levelEditorMenu.SetActive(true);
+		levelSelectMenu.SetActive(true);
+		PopulateLevelsList();
 		filePath = levelEditorMenu.GetComponentInChildren<TMP_InputField>();
+		serializer.gameMode = GameMode.Editor;
 	}
 
 	public void QuitButton()
@@ -202,7 +206,6 @@ public class MenuManager : MonoBehaviour
 
 	public void LoadGame(int index){
 		serializer.filePath = levels[index];
-		serializer.gameMode = GameMode.Play;
 		SceneManager.LoadScene("Bruh");
 	}
 	public void LoadEditor()
