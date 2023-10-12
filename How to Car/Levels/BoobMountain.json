@@ -1,12 +1,13 @@
 {
-    "guid": "838da40d-3290-40d3-8f95-502c4eb11f74",
+    "guid": "bf00c4af-619d-4918-9780-e27d6b89b8b2",
     "prettyName": "Boob Mountain",
     "description": "Climb the goddamn mountain",
     "objects": [
         {
+            "id": 0,
             "type": 4,
             "gameObject": {
-                "instanceID": -39324
+                "instanceID": -39228
             },
             "position": {
                 "x": 2.0312747955322267,
@@ -18,12 +19,15 @@
                 "y": 0.0,
                 "z": 0.0,
                 "w": 1.0
-            }
+            },
+            "group_id": 0,
+            "data": "JOINTS:;"
         },
         {
+            "id": 0,
             "type": 4,
             "gameObject": {
-                "instanceID": -39370
+                "instanceID": -39242
             },
             "position": {
                 "x": 2.0312747955322267,
@@ -35,12 +39,15 @@
                 "y": -0.9917832612991333,
                 "z": 0.12792949378490449,
                 "w": 0.0
-            }
+            },
+            "group_id": 0,
+            "data": "JOINTS:;"
         },
         {
+            "id": 0,
             "type": 5,
             "gameObject": {
-                "instanceID": -39400
+                "instanceID": -39256
             },
             "position": {
                 "x": 2.0312747955322267,
@@ -52,12 +59,15 @@
                 "y": -1.0,
                 "z": 0.0,
                 "w": 0.0
-            }
+            },
+            "group_id": 0,
+            "data": "JOINTS:;"
         },
         {
+            "id": 0,
             "type": 8,
             "gameObject": {
-                "instanceID": -39430
+                "instanceID": -39270
             },
             "position": {
                 "x": 16.331275939941408,
@@ -69,12 +79,15 @@
                 "y": -0.7071068286895752,
                 "z": 0.0,
                 "w": -0.7071068286895752
-            }
+            },
+            "group_id": 0,
+            "data": "JOINTS:;"
         },
         {
+            "id": 0,
             "type": 5,
             "gameObject": {
-                "instanceID": -39472
+                "instanceID": -39296
             },
             "position": {
                 "x": 23.831275939941408,
@@ -86,12 +99,15 @@
                 "y": 0.7071068286895752,
                 "z": 0.0,
                 "w": -0.7071068286895752
-            }
+            },
+            "group_id": 0,
+            "data": "JOINTS:;"
         },
         {
+            "id": 0,
             "type": 4,
             "gameObject": {
-                "instanceID": -39502
+                "instanceID": -39310
             },
             "position": {
                 "x": 30.63127899169922,
@@ -103,12 +119,15 @@
                 "y": 0.9936213493347168,
                 "z": 0.11276862770318985,
                 "w": 0.0
-            }
+            },
+            "group_id": 0,
+            "data": "JOINTS:;"
         },
         {
+            "id": 0,
             "type": 9,
             "gameObject": {
-                "instanceID": -39532
+                "instanceID": -39324
             },
             "position": {
                 "x": 30.63127899169922,
@@ -120,7 +139,9 @@
                 "y": 1.0,
                 "z": 0.0,
                 "w": 0.0
-            }
+            },
+            "group_id": 0,
+            "data": "JOINTS:;"
         }
     ]
 }

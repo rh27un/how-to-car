@@ -74,7 +74,7 @@ public class TrackJoint
 	}
 	public Vector3 offset;
 	public Vector3 forward;
-	public GameObject takenBy;
+	public TrackObject takenBy;
 }
 
 public class TrackObject : LevelObject
@@ -336,7 +336,8 @@ public class Serializer : MonoBehaviour
 			case GameMode.Play:
 				GameObject.Find("GAMEPLAY").SetActive(true);
 				GameObject.Find("LEVEL EDITOR").SetActive(false);
-				var objects = LoadLevel();
+				var level = LoadLevel();
+				var objects = level.objects.ToList();
 				if (objects != null)
 				{
 					foreach (var obj in objects)
@@ -364,6 +365,21 @@ public class Serializer : MonoBehaviour
 		{
 			obj.position = obj.gameObject.transform.position;
 			obj.rotation = obj.gameObject.transform.rotation;
+			
+			if(obj is TrackObject)
+			{
+				TrackObject trobj = (TrackObject)obj;
+				string jointsString = "JOINTS:";
+				for(int i = 0; i < trobj.joints.Length; i++)
+				{
+					var joint = trobj.joints[i];
+					if (!joint.takenBy.isPreview)
+					{
+						jointsString += $"{i}={objects.IndexOf(joint.takenBy)},";
+					}
+				}
+				obj.data += jointsString + ";";
+			}
 		}
 		if(levelData != null){
 			levelData.guid = Guid.NewGuid().ToString();
@@ -375,7 +391,7 @@ public class Serializer : MonoBehaviour
 		}
 	}
 
-	public List<LevelObject> LoadLevel()
+	public LevelData LoadLevel()
 	{
 		if (File.Exists($"{filePath}"))
 		{
@@ -384,7 +400,7 @@ public class Serializer : MonoBehaviour
 				levelData = JsonUtility.FromJson<LevelData>(json);
 				var objects = levelData.objects.ToList();
 				Debug.Log("Succesfully loaded " + filePath + " in " + gameMode.ToString() + " mode");
-				return objects;
+				return levelData;
 			} catch(Exception x){
 				Debug.LogError("Error loading file " + filePath + ", might be outdated");
 				return null;

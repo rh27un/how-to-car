@@ -50,7 +50,9 @@ public class LevelEditor : MonoBehaviour
 
 	protected int typeToSpawn;
 
-	protected GameObject selectedObject;
+	//protected GameObject selectedObject;
+
+	protected List<GameObject> selectedObjects = new List<GameObject>();
 
 	[SerializeField]
 	protected TMP_Text moveModeText;
@@ -69,7 +71,7 @@ public class LevelEditor : MonoBehaviour
 
 	[SerializeField]
 	protected TMP_InputField levelName;
-[SerializeField]
+	[SerializeField]
 	protected TMP_InputField levelDescription;
 	Dictionary<int, TrackObject> trackObjects = new Dictionary<int, TrackObject>()
 	{
@@ -143,6 +145,7 @@ public class LevelEditor : MonoBehaviour
 	};
 
 	int gizmoLayer = (1 << 6);
+	int nextGroup = 0;
 	[SerializeField]
 	private bool debugLevelEditor;
 
@@ -179,7 +182,7 @@ public class LevelEditor : MonoBehaviour
 	{
 		currentState = EditorState.Place;
 		gizmo.transform.position = transform.forward * -1000f;
-		selectedObject = null;
+		selectedObjects.Clear();
 		typeToSpawn = type;
 		var mesh = prefabList.Prefabs[type].GetComponentInChildren<MeshFilter>().sharedMesh;
 		preview.GetComponent<MeshFilter>().sharedMesh = mesh;
@@ -202,12 +205,12 @@ public class LevelEditor : MonoBehaviour
 				{
 					// if joint is taken by preview
 					var joint = track.joints[i];
-					if (joint.takenBy != null)
+					if (joint.takenBy.isPreview)
 					{
-						var trackPreview = joint.takenBy;
+						var trackPreview = joint.takenBy.gameObject;
 						trackPreview.GetComponentInChildren<MeshFilter>().sharedMesh = mesh;
 						trackPreview.GetComponentInChildren<MeshCollider>().sharedMesh = mesh;
-						track.joints[i].takenBy.GetComponentInChildren<MeshRenderer>().enabled = true;
+						track.joints[i].takenBy.gameObject.GetComponentInChildren<MeshRenderer>().enabled = true;
 						PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[type], trackPreview), currentJoint);
 					}
 				}
@@ -220,8 +223,8 @@ public class LevelEditor : MonoBehaviour
 				var track = (TrackObject)trackObject;
 				for (int i = 0; i < track.joints.Length; i++)
 				{
-					if (track.joints[i].takenBy != null)
-						track.joints[i].takenBy.GetComponentInChildren<MeshRenderer>().enabled = false;
+					if (track.joints[i].takenBy.isPreview)
+						track.joints[i].takenBy.gameObject.GetComponentInChildren<MeshRenderer>().enabled = false;
 				}
 			}
 		}
@@ -240,13 +243,13 @@ public class LevelEditor : MonoBehaviour
 		if (currentState == EditorState.Simple)
 		{
 			currentState = EditorState.Advanced;
-			selectedObject = null;
+			selectedObjects.Clear();
 		}
 		else if (currentState == EditorState.Advanced)
 		{
 			gizmo.transform.position = transform.forward * -1000f;
 			currentState = EditorState.Simple;
-			selectedObject = null;
+			selectedObjects.Clear();
 		}
 		moveModeText.text = moveState == EditorState.Simple ? "Simple" : "Advanced";
 	}
@@ -271,7 +274,8 @@ public class LevelEditor : MonoBehaviour
 		} else
 		{
 			serializer = serializerObject.GetComponent<Serializer>();
-			Load();
+			if(!string.IsNullOrEmpty(serializer.filePath))
+				Load();
 		}
 		moveModeText.text = moveState == EditorState.Simple ? "Simple" : "Advanced";
 		camera = GetComponent<Camera>();
@@ -314,38 +318,47 @@ public class LevelEditor : MonoBehaviour
 			case EditorState.Simple:
 				if (Physics.Raycast(camera.ScreenPointToRay(Input.mousePosition), out hit, 1000f))
 				{
-					if (selectedObject == null)
+					if (selectedObjects.Count == 0)
 					{
 						if (hit.collider.tag != "Static")
 						{
 							if (Input.GetMouseButtonDown(0) && !IsPointerOverUIObject())
 							{
-								selectedObject = hit.collider.gameObject;
-								selectedObject.layer = 2;
+								selectedObjects.Add(hit.collider.gameObject);
+								selectedObjects[0].layer = 2;
 							}
 						}
 					}
 					else
 					{
-						PlaceObject(selectedObject, hit);
+						PlaceObject(selectedObjects[0], hit);
 						if (Input.GetMouseButtonUp(0))
 						{
-							selectedObject.layer = 0;
-							selectedObject = null;
+							selectedObjects[0].layer = 0;
+							selectedObjects.Clear();
 						}
 					}
 				}
 				break;
 			case EditorState.Advanced:
-				if (selectedObject != null)
+				if (selectedObjects.Count > 0)
 				{
 					if(Input.GetKeyDown(KeyCode.Delete)){
-						objects.Remove(objects.SingleOrDefault(o => o.gameObject == selectedObject || o.gameObject.transform.IsChildOf(selectedObject.transform)));
-						Destroy(selectedObject);
+						
+						foreach(GameObject selectedObject in selectedObjects)
+						{
+							var topMost = selectedObject;
+							while(topMost.transform.parent != null)
+							{
+								topMost = transform.parent.gameObject;
+							}
+							objects.Remove(objects.SingleOrDefault(o => o.gameObject == topMost));
+							Destroy(topMost);
+						}
 					}
 					if (Physics.Raycast(camera.ScreenPointToRay(Input.mousePosition), out hit, 1000f, gizmoLayer))
 					{
-						if (selectedObject != null && hit.collider.tag == "Gizmo")
+						if (selectedObjects.Count > 0 && hit.collider.tag == "Gizmo")
 						{
 
 							if (selectedAxis == Vector3.zero)
@@ -378,38 +391,57 @@ public class LevelEditor : MonoBehaviour
 					{
 						if (Input.GetMouseButtonDown(0) && !IsPointerOverUIObject())
 						{
-							selectedObject = hit.collider.gameObject;
-							while(selectedObject.transform.parent != null)
+							var newObject = hit.collider.gameObject;
+							while (newObject.transform.parent != null)
 							{
-								selectedObject = selectedObject.transform.parent.gameObject;
+								newObject = newObject.transform.parent.gameObject;
 							}
-							gizmo.transform.position = selectedObject.transform.position;
+							if (selectedObjects.Contains(newObject))
+							{
+								var thisObject = objects.SingleOrDefault(o => o.gameObject == newObject);
+								foreach (var obj in objects.Where(o => o.group_id == thisObject.group_id && !selectedObjects.Contains(o.gameObject)))
+								{
+									selectedObjects.Add(obj.gameObject);
+								}
+							}
+							else if (!Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
+							{
+								selectedObjects.Clear();
+							}
+							
+							if (!selectedObjects.Contains(newObject))
+							{
+								selectedObjects.Add(newObject);
+								gizmo.transform.position = selectedObjects[0].transform.position;
+							}
 						}
 					}
 
 				}
 				if (selectedAxis != Vector3.zero)
 				{
-					if (selectedAxis == Vector3.right)
-						selectedObject.transform.position += selectedAxis * Input.GetAxis("Mouse Y") * advancedMoveSpeed * camera.orthographicSize;
-					else if (selectedAxis == Vector3.forward)
-						selectedObject.transform.position -= selectedAxis * Input.GetAxis("Mouse X") * advancedMoveSpeed * camera.orthographicSize;
-					else if (selectedAxis == Vector3.up)
-						selectedObject.transform.position += selectedAxis * Input.GetAxis("Mouse X") * advancedMoveSpeed * camera.orthographicSize;
-					else if (selectedAxis == -Vector3.right)
-						selectedObject.transform.Rotate(selectedAxis, Input.GetAxis("Mouse Y"), Space.World);
-					else if (selectedAxis == -Vector3.forward)
-						selectedObject.transform.Rotate(selectedAxis, Input.GetAxis("Mouse Y"), Space.World);
-					else if (selectedAxis == -Vector3.up)
-						selectedObject.transform.Rotate(selectedAxis, Input.GetAxis("Mouse X"), Space.World);
-
+					foreach (GameObject selectedObject in selectedObjects)
+					{
+						if (selectedAxis == Vector3.right)
+							selectedObject.transform.position += selectedAxis * Input.GetAxis("Mouse Y") * advancedMoveSpeed * camera.orthographicSize;
+						else if (selectedAxis == Vector3.forward)
+							selectedObject.transform.position -= selectedAxis * Input.GetAxis("Mouse X") * advancedMoveSpeed * camera.orthographicSize;
+						else if (selectedAxis == Vector3.up)
+							selectedObject.transform.position += selectedAxis * Input.GetAxis("Mouse X") * advancedMoveSpeed * camera.orthographicSize;
+						else if (selectedAxis == -Vector3.right)
+							selectedObject.transform.RotateAround(gizmo.transform.position, selectedAxis, Input.GetAxis("Mouse Y"));
+						else if (selectedAxis == -Vector3.forward)
+							selectedObject.transform.RotateAround(gizmo.transform.position, selectedAxis, Input.GetAxis("Mouse Y"));
+						else if (selectedAxis == -Vector3.up)
+							selectedObject.transform.RotateAround(gizmo.transform.position, selectedAxis, Input.GetAxis("Mouse X"));
+					}
 					if (Input.GetMouseButtonUp(0) && !IsPointerOverUIObject())
 					{
 						selectedAxis = Vector3.zero;
 					}
-					gizmo.transform.position = selectedObject.transform.position;
+					gizmo.transform.position = selectedObjects[0].transform.position;
 				}
-				if (selectedObject != null)
+				if (selectedObjects.Count > 0)
 				{
 					gizmo.transform.localScale = Vector3.one * camera.orthographicSize * gizmoSize;
 				}
@@ -441,12 +473,12 @@ public class LevelEditor : MonoBehaviour
 								{
 									// if joint is taken by preview
 									var joint = track.joints[i];
-									if (joint.takenBy != null)
+									if (joint.takenBy.isPreview)
 									{
-										var trackPreview = joint.takenBy;
+										var trackPreview = joint.takenBy.gameObject;
 										trackPreview.GetComponentInChildren<MeshFilter>().sharedMesh = mesh;
 										trackPreview.GetComponentInChildren<MeshCollider>().sharedMesh = mesh;
-										track.joints[i].takenBy.GetComponentInChildren<MeshRenderer>().enabled = true;
+										track.joints[i].takenBy.gameObject.GetComponentInChildren<MeshRenderer>().enabled = true;
 										PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[typeToSpawn], trackPreview.gameObject), currentJoint);
 									}
 								}
@@ -463,12 +495,12 @@ public class LevelEditor : MonoBehaviour
 								{
 									// if joint is taken by preview
 									var joint = track.joints[i];
-									if (joint.takenBy != null)
+									if (joint.takenBy.isPreview)
 									{
-										var trackPreview = joint.takenBy;
+										var trackPreview = joint.takenBy.gameObject;
 										trackPreview.GetComponentInChildren<MeshFilter>().sharedMesh = mesh;
 										trackPreview.GetComponentInChildren<MeshCollider>().sharedMesh = mesh;
-										track.joints[i].takenBy.GetComponentInChildren<MeshRenderer>().enabled = true;
+										track.joints[i].takenBy.gameObject.GetComponentInChildren<MeshRenderer>().enabled = true;
 										PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[typeToSpawn], trackPreview), currentJoint);
 									}
 								}
@@ -484,6 +516,8 @@ public class LevelEditor : MonoBehaviour
 							newObject.transform.Rotate(Vector3.left, -90f, Space.Self);
 						}
 						PlaceObject(newObject, hit);
+
+						// If we're attaching a track object to another (mouse pointer is on a RoadPreview gameobject)
 						if (trackObjects.ContainsKey(typeToSpawn) && hit.collider.tag == "RoadPreview")
 						{
 							var newTrack = new TrackObject(trackObjects[typeToSpawn]);
@@ -492,43 +526,60 @@ public class LevelEditor : MonoBehaviour
 							newObject.transform.rotation = hit.collider.transform.parent.rotation;
 							newTrack.position = newObject.transform.position;
 							newTrack.rotation = newObject.transform.rotation;
+							newTrack.isPreview = false;
+							var roadPreview = hit.collider.GetComponent<RoadPreview>();
+							var oldTrack = roadPreview.trackObject;
+							newTrack.group_id = oldTrack.group_id;
 							Destroy(hit.collider.transform.parent.gameObject);
 							for (int i = 0; i < newTrack.joints.Length; i++)
 							{
 								if (i != currentJoint)
 								{
 									var joint = newTrack.joints[i];
-									joint.takenBy = Instantiate(prefabList.Prefabs[4]);
-									joint.takenBy.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
-									joint.takenBy.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(newTrack, i);
-									joint.takenBy.tag = "RoadPreview";
-									joint.takenBy.transform.GetChild(0).tag = "RoadPreview";
+									var previewObject = Instantiate(prefabList.Prefabs[4]);
+									previewObject.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
+									previewObject.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(newTrack, i);
+									previewObject.tag = "RoadPreview";
+									previewObject.transform.GetChild(0).tag = "RoadPreview";
+									TrackObject previewTrack = new TrackObject(trackObjects[4], previewObject);
+									previewTrack.isPreview = true;
+									joint.takenBy = previewTrack;
+								} else
+								{
+									oldTrack.joints[roadPreview.jointIndex].takenBy = newTrack;
+									newTrack.joints[i].takenBy = oldTrack;
 								}
 							}
 							objects.Add(newTrack);
 
 						}
-						else if (trackObjects.ContainsKey(typeToSpawn))
+						else if (trackObjects.ContainsKey(typeToSpawn)) // otherwise if we're just placing a new trackobject
 						{
 							var newTrack = new TrackObject(trackObjects[typeToSpawn]);
 							newTrack.gameObject = newObject;
 							newTrack.position = newObject.transform.position;
 							newTrack.rotation = newObject.transform.rotation;
+							newTrack.group_id = nextGroup;
+							nextGroup++;
 							for (int i = 0; i < newTrack.joints.Length; i++)
 							{
 								var joint = newTrack.joints[i];
-								joint.takenBy = Instantiate(prefabList.Prefabs[4]);
-								joint.takenBy.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
-								joint.takenBy.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(newTrack, i);
-								joint.takenBy.tag = "RoadPreview";
-								joint.takenBy.transform.GetChild(0).tag = "RoadPreview";
+								var previewObject = Instantiate(prefabList.Prefabs[4]);
+								previewObject.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
+								previewObject.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(newTrack, i);
+								previewObject.tag = "RoadPreview";
+								previewObject.transform.GetChild(0).tag = "RoadPreview";
+								TrackObject previewTrack = new TrackObject(trackObjects[4], previewObject);
+								previewTrack.isPreview = true;
+								joint.takenBy = previewTrack;
 							}
-
+							
 							objects.Add(newTrack);
 						}
-						else
+						else //otherwise we're just adding a regular object
 						{
-							objects.Add(new LevelObject() { type = typeToSpawn, gameObject = newObject, position = newObject.transform.position, rotation = newObject.transform.rotation });
+							objects.Add(new LevelObject() { type = typeToSpawn, group_id = nextGroup, gameObject = newObject, position = newObject.transform.position, rotation = newObject.transform.rotation });
+							nextGroup++;
 						}
 
 						if (!multiPlace)
@@ -536,8 +587,9 @@ public class LevelEditor : MonoBehaviour
 							currentState = moveState;
 							if (currentState == EditorState.Advanced)
 							{
-								selectedObject = newObject;
-								gizmo.transform.position = selectedObject.transform.position;
+								selectedObjects.Clear();
+								selectedObjects.Add(newObject);
+								gizmo.transform.position = selectedObjects[0].transform.position;
 							}
 							preview.transform.position = (transform.forward * -1000f);
 							foreach (var trackObject in objects.Where(o => trackObjects.ContainsKey(o.type)))
@@ -545,8 +597,8 @@ public class LevelEditor : MonoBehaviour
 								var track = (TrackObject)trackObject;
 								for (int i = 0; i < track.joints.Length; i++)
 								{
-									if (track.joints[i].takenBy != null)
-										track.joints[i].takenBy.GetComponentInChildren<MeshRenderer>().enabled = false;
+									if (track.joints[i].takenBy.isPreview)
+										track.joints[i].takenBy.gameObject.GetComponentInChildren<MeshRenderer>().enabled = false;
 								}
 							}
 						}
@@ -560,12 +612,12 @@ public class LevelEditor : MonoBehaviour
 								{
 									// if joint is taken by preview
 									var joint = track.joints[i];
-									if (joint.takenBy != null)
+									if (joint.takenBy.isPreview)
 									{
-										var trackPreview = joint.takenBy;
+										var trackPreview = joint.takenBy.gameObject;
 										trackPreview.GetComponentInChildren<MeshFilter>().sharedMesh = mesh;
 										trackPreview.GetComponentInChildren<MeshCollider>().sharedMesh = mesh;
-										track.joints[i].takenBy.GetComponentInChildren<MeshRenderer>().enabled = true;
+										track.joints[i].takenBy.gameObject.GetComponentInChildren<MeshRenderer>().enabled = true;
 										PlaceNewTrack((TrackObject)track, i, new TrackObject(trackObjects[typeToSpawn], trackPreview), currentJoint);
 									}
 								}
@@ -602,11 +654,14 @@ public class LevelEditor : MonoBehaviour
 			for (int i = 0; i < trobj.joints.Length; i++)
 			{
 				var joint = trobj.joints[i];
-				joint.takenBy = Instantiate(prefabList.Prefabs[4]);
-				joint.takenBy.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
-				joint.takenBy.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(trobj, i);
-				joint.takenBy.tag = "RoadPreview";
-				joint.takenBy.transform.GetChild(0).tag = "RoadPreview";
+				var previewObject = Instantiate(prefabList.Prefabs[4]);
+				previewObject.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
+				previewObject.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(trobj, i);
+				previewObject.tag = "RoadPreview";
+				previewObject.transform.GetChild(0).tag = "RoadPreview";
+				TrackObject previewTrack = new TrackObject(trackObjects[4], previewObject);
+				previewTrack.isPreview = true;
+				joint.takenBy = previewTrack;
 			}
 			objects.Add(trobj);
 			trobj.id = objects.IndexOf(trobj);
@@ -643,24 +698,60 @@ public class LevelEditor : MonoBehaviour
 
 	private void Load()
 	{
-		var objectsPlain = serializer.LoadLevel();
+		nextGroup = 0;
+		var levelData = serializer.LoadLevel();
+		var objectsPlain = levelData.objects.ToList();
+		levelName.text = levelData.prettyName;
+		levelDescription.text = levelData.description;
 		if(objectsPlain == null)
 			return;
 		foreach(var obj in objectsPlain)
 		{
-			if(trackObjects.ContainsKey(obj.type))
+			if(obj.group_id >= nextGroup)
+			{
+				nextGroup = obj.group_id + 1;
+			}
+			string[] rawData;
+			Dictionary<string, string> data = null;
+			if (!string.IsNullOrEmpty(obj.data))
+			{
+				rawData = obj.data.Split(';');
+				data = rawData.Where(d => !string.IsNullOrEmpty(d)).ToDictionary(k => k.Split(':')[0], e => e.Split(':')[1]);
+			}
+			if (trackObjects.ContainsKey(obj.type))
 			{
 				var newTrack = new TrackObject(trackObjects[obj.type]);
+				newTrack.group_id = obj.group_id;
 				newTrack.position = obj.position;
 				newTrack.rotation = obj.rotation;
 				for (int i = 0; i < newTrack.joints.Length; i++)
 				{
-					var joint = newTrack.joints[i];
-					joint.takenBy = Instantiate(prefabList.Prefabs[4]);
-					joint.takenBy.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
-					joint.takenBy.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(newTrack, i);
-					joint.takenBy.tag = "RoadPreview";
-					joint.takenBy.transform.GetChild(0).tag = "RoadPreview";
+					// this is where we check to see if the joint in the object data is
+					Dictionary<int, int> joints = null;
+					if (data != null && data.ContainsKey("JOINTS"))
+					{
+						if (!string.IsNullOrEmpty(data["JOINTS"])){
+							joints = data["JOINTS"].Split(',').Where(j => !string.IsNullOrEmpty(j)).ToDictionary(k => int.Parse(k.Split('=')[0]), v => int.Parse(v.Split('=')[1]));
+						}
+					}
+					if (joints != null && joints.ContainsKey(i))
+					{
+						var joint = newTrack.joints[i];
+						joint.takenBy = new TrackObject();
+						//(TrackObject)objectsPlain[joints[i]];
+					}
+					else
+					{
+						var joint = newTrack.joints[i];
+						var previewObject = Instantiate(prefabList.Prefabs[4]);
+						previewObject.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
+						previewObject.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(newTrack, i);
+						previewObject.tag = "RoadPreview";
+						previewObject.transform.GetChild(0).tag = "RoadPreview";
+						TrackObject previewTrack = new TrackObject(trackObjects[4], previewObject);
+						previewTrack.isPreview = true;
+						joint.takenBy = previewTrack;
+					}
 				}
 
 				objects.Add(newTrack);
