@@ -62,6 +62,8 @@ public class LevelEditor : MonoBehaviour
 	protected float gizmoSize;
 
 	protected Vector3 selectedAxis;
+
+	protected Vector3 simpleMoveOffset;
 	[SerializeField]
 	protected float advancedMoveSpeed = 10f;
 
@@ -73,7 +75,24 @@ public class LevelEditor : MonoBehaviour
 	protected TMP_InputField levelName;
 	[SerializeField]
 	protected TMP_InputField levelDescription;
+	[SerializeField]
+	protected TMP_InputField inputXPos;
+	[SerializeField]
+	protected TMP_InputField inputYPos;
+	[SerializeField]
+	protected TMP_InputField inputZPos;
+	[SerializeField]
+	protected TMP_InputField inputXRot;
+	[SerializeField]
+	protected TMP_InputField inputYRot;
+	[SerializeField]
+	protected TMP_InputField inputZRot;
+	[SerializeField]
+	protected TMP_Dropdown inputObjectType;
+	[SerializeField]
+	protected 
 	Dictionary<int, TrackObject> trackObjects = new Dictionary<int, TrackObject>()
+
 	{
 		{
 			4, new TrackObject()
@@ -326,12 +345,13 @@ public class LevelEditor : MonoBehaviour
 							{
 								selectedObjects.Add(hit.collider.gameObject);
 								selectedObjects[0].layer = 2;
+								simpleMoveOffset = selectedObjects[0].transform.position - hit.point;
 							}
 						}
 					}
 					else
 					{
-						PlaceObject(selectedObjects[0], hit);
+						PlaceObject(selectedObjects[0], hit, simpleMoveOffset);
 						if (Input.GetMouseButtonUp(0))
 						{
 							selectedObjects[0].layer = 0;
@@ -454,7 +474,7 @@ public class LevelEditor : MonoBehaviour
 				if (Physics.Raycast(camera.ScreenPointToRay(Input.mousePosition), out hit, 1000f))
 				{
 					if (hit.collider.tag != "RoadPreview")
-						PlaceObject(preview, hit);
+						PlaceObject(preview, hit, Vector3.zero);
 					else
 						preview.transform.position = Vector3.down;
 
@@ -515,7 +535,7 @@ public class LevelEditor : MonoBehaviour
 						{
 							newObject.transform.Rotate(Vector3.left, -90f, Space.Self);
 						}
-						PlaceObject(newObject, hit);
+						PlaceObject(newObject, hit, Vector3.zero);
 
 						// If we're attaching a track object to another (mouse pointer is on a RoadPreview gameobject)
 						if (trackObjects.ContainsKey(typeToSpawn) && hit.collider.tag == "RoadPreview")
@@ -673,7 +693,7 @@ public class LevelEditor : MonoBehaviour
 		}
 
 	}
-	private void PlaceObject(GameObject go, RaycastHit info)
+	private void PlaceObject(GameObject go, RaycastHit info, Vector3 offset)
 	{
 		while(go.transform.parent != null)
 		{
@@ -681,10 +701,10 @@ public class LevelEditor : MonoBehaviour
 		}
 		float distance = 10f;
 		Vector3 normal = info.normal;
-		go.transform.position = info.point + normal * distance;
+		go.transform.position = info.point + offset + normal * distance;
 		Vector3 closestPoint = go.GetComponentInChildren<Collider>().ClosestPoint(info.point);
 		distance -= Vector3.Distance(info.point, closestPoint);
-		go.transform.position = info.point + normal * distance;
+		go.transform.position = info.point + offset + normal * distance;
 
 	}
 
