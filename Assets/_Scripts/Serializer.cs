@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 [Serializable]
 public class LevelObject
 {
-	public int id; // for objects to reference each other. for simplicity, this is the same as the object's index in objects
+	public string id; // for objects to reference each other. for simplicity, this is the same as the object's index in objects
 	public int type;
 	public GameObject gameObject; // Keep a reference to the object's transform so we can keep track of changes made in the editor
 	public Vector3 position;

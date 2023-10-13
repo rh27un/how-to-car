@@ -72,6 +72,8 @@ public class LevelEditor : MonoBehaviour
 	protected Serializer serializer;
 
 	[SerializeField]
+	protected GameObject inspectinator;
+	[SerializeField]
 	protected TMP_InputField levelName;
 	[SerializeField]
 	protected TMP_InputField levelDescription;
@@ -90,7 +92,7 @@ public class LevelEditor : MonoBehaviour
 	[SerializeField]
 	protected TMP_Dropdown inputObjectType;
 	[SerializeField]
-	protected 
+	protected TMP_InputField inputID;
 	Dictionary<int, TrackObject> trackObjects = new Dictionary<int, TrackObject>()
 
 	{
@@ -195,6 +197,38 @@ public class LevelEditor : MonoBehaviour
 		EventSystem.current.RaycastAll(eventDataCurrentPosition, results);
 		//Debug.Log(results[0].gameObject.name);
 		return results.Count > 0;
+	}
+
+	protected void UpdateInspectinator()
+	{
+		if (currentState != EditorState.Advanced || selectedObjects.Count != 1)
+		{
+			inspectinator.SetActive(false);
+		}
+		else
+		{
+			if(!inspectinator.activeSelf)
+				inspectinator.SetActive(true);
+
+			Transform selectedTransform = selectedObjects[0].transform;
+			LevelObject selectedLevelObject = objects.SingleOrDefault(x => x.gameObject == selectedObjects[0]);
+
+			if (selectedLevelObject != null)
+			{
+				inputXPos.text = selectedTransform.position.x.ToString();
+				inputYPos.text = selectedTransform.position.y.ToString();
+				inputZPos.text = selectedTransform.position.z.ToString();
+				Vector3 rotationEulers = selectedTransform.rotation.eulerAngles;
+				inputXRot.text = rotationEulers.x.ToString();
+				inputYRot.text = rotationEulers.y.ToString();
+				inputZRot.text = rotationEulers.z.ToString();
+
+				inputObjectType.value = selectedLevelObject.type;
+				inputID.text = selectedLevelObject.id;
+			}
+
+		}
+
 	}
 
 	public void SetType(int type)
@@ -321,6 +355,7 @@ public class LevelEditor : MonoBehaviour
 			button.GetComponentInChildren<TMP_Text>().text = prefabList.Prefabs[i].name;
 			button.GetComponent<Button>().onClick.AddListener(delegate { SetType(type); });
 		}
+		inputObjectType.options = prefabList.Prefabs.Select(x => new TMP_Dropdown.OptionData(x.name)).ToList();
 	}
 
 	private void Update()
@@ -363,6 +398,7 @@ public class LevelEditor : MonoBehaviour
 			case EditorState.Advanced:
 				if (selectedObjects.Count > 0)
 				{
+					UpdateInspectinator();
 					if(Input.GetKeyDown(KeyCode.Delete)){
 						
 						foreach(GameObject selectedObject in selectedObjects)
@@ -684,12 +720,12 @@ public class LevelEditor : MonoBehaviour
 				joint.takenBy = previewTrack;
 			}
 			objects.Add(trobj);
-			trobj.id = objects.IndexOf(trobj);
+			//trobj.id = objects.IndexOf(trobj);
 		} else
 		{
 			LevelObject obj = new LevelObject() { type = _type, gameObject = _obj, position = _obj.transform.position, rotation = _obj.transform.rotation };
 			objects.Add(obj);
-			obj.id = objects.IndexOf(obj);
+			//obj.id = objects.IndexOf(obj);
 		}
 
 	}
