@@ -828,4 +828,82 @@ public class LevelEditor : MonoBehaviour
 			obj.gameObject = newObject;
 		}
 	}
+
+	public void SetPosX(string  sX)
+	{
+		if(selectedObjects.Count == 1)
+		{
+			float x;
+			if(float.TryParse(sX, out x))
+			{
+				Vector3 pos = selectedObjects[0].transform.position;
+				selectedObjects[0].transform.position = new Vector3(x, pos.y, pos.z);
+			}
+		}
+	}
+	public void SetPosY(string sY)
+	{
+		if (selectedObjects.Count == 1)
+		{
+			float y;
+			if (float.TryParse(sY, out y))
+			{
+				Vector3 pos = selectedObjects[0].transform.position;
+				selectedObjects[0].transform.position = new Vector3(pos.x, y, pos.z);
+			}
+		}
+	}
+
+
+	public void SetPosZ(string sZ)
+	{
+		if (selectedObjects.Count == 1)
+		{
+			float z;
+			if (float.TryParse(sZ, out z))
+			{
+				Vector3 pos = selectedObjects[0].transform.position;
+				selectedObjects[0].transform.position = new Vector3(pos.x, pos.y, z);
+			}
+		}
+	}
+
+	public void SetRotX(string sX)
+	{
+		if(selectedObjects.Count == 1)
+		{
+			float x;
+			if(float.TryParse(sX, out x))
+			{
+				Vector3 rot = selectedObjects[0].transform.rotation.eulerAngles;
+				selectedObjects[0].transform.rotation = Quaternion.Euler(x, rot.y, rot.z);
+			}
+		}
+	}
+
+	public void SetRotY(string sY)
+	{
+		if (selectedObjects.Count == 1)
+		{
+			float y;
+			if (float.TryParse(sY, out y))
+			{
+				Vector3 rot = selectedObjects[0].transform.rotation.eulerAngles;
+				selectedObjects[0].transform.rotation = Quaternion.Euler(rot.x, y, rot.z);
+			}
+		}
+	}
+
+	public void SetRotZ(string sZ)
+	{
+		if (selectedObjects.Count == 1)
+		{
+			float z;
+			if (float.TryParse(sZ, out z))
+			{
+				Vector3 rot = selectedObjects[0].transform.rotation.eulerAngles;
+				selectedObjects[0].transform.rotation = Quaternion.Euler(rot.x, rot.y, z);
+			}
+		}
+	}
 }

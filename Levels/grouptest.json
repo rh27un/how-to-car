@@ -1,13 +1,13 @@
 {
-    "guid": "3e1ec257-e7da-4eb8-b665-d49712ef1b24",
+    "guid": "92df7e77-09fc-45cb-ba01-9d91dd7daa49",
     "prettyName": "group test",
     "description": "",
     "objects": [
         {
-            "id": 0,
+            "id": "",
             "type": 4,
             "gameObject": {
-                "instanceID": -81986
+                "instanceID": -5126
             },
             "position": {
                 "x": -13.64560604095459,
@@ -24,10 +24,10 @@
             "data": "JOINTS:0=-1,1=-1,;"
         },
         {
-            "id": 0,
+            "id": "",
             "type": 4,
             "gameObject": {
-                "instanceID": -82000
+                "instanceID": -5140
             },
             "position": {
                 "x": 10.03023910522461,
@@ -44,10 +44,10 @@
             "data": "JOINTS:;"
         },
         {
-            "id": 0,
+            "id": "",
             "type": 5,
             "gameObject": {
-                "instanceID": -82014
+                "instanceID": -5154
             },
             "position": {
                 "x": 34.10140609741211,
@@ -64,10 +64,10 @@
             "data": "JOINTS:0=-1,;"
         },
         {
-            "id": 0,
+            "id": "",
             "type": 5,
             "gameObject": {
-                "instanceID": -82028
+                "instanceID": -5168
             },
             "position": {
                 "x": 26.356006622314454,
@@ -84,10 +84,10 @@
             "data": "JOINTS:0=-1,1=-1,;"
         },
         {
-            "id": 0,
+            "id": "",
             "type": 5,
             "gameObject": {
-                "instanceID": -82042
+                "instanceID": -5182
             },
             "position": {
                 "x": 32.05601501464844,
@@ -104,30 +104,30 @@
             "data": "JOINTS:0=-1,1=-1,;"
         },
         {
-            "id": 0,
+            "id": "",
             "type": 5,
             "gameObject": {
-                "instanceID": -82056
+                "instanceID": -5196
             },
             "position": {
-                "x": 39.801361083984378,
-                "y": 0.013874053955078125,
-                "z": 10.930715560913086
+                "x": 44.89925765991211,
+                "y": 1.4193520545959473,
+                "z": 31.006484985351564
             },
             "rotation": {
-                "x": 0.0,
-                "y": -0.07541471719741821,
-                "z": 0.0,
-                "w": 0.9971523284912109
+                "x": 0.31537947058677676,
+                "y": -0.21675430238246919,
+                "z": 0.5232911109924316,
+                "w": 0.7613933086395264
             },
             "group_id": 3,
             "data": "JOINTS:1=-1,;"
         },
         {
-            "id": 0,
+            "id": "",
             "type": 6,
             "gameObject": {
-                "instanceID": -82070
+                "instanceID": -5210
             },
             "position": {
                 "x": 52.411373138427737,
@@ -144,10 +144,10 @@
             "data": "JOINTS:0=-1,;"
         },
         {
-            "id": 0,
+            "id": "",
             "type": 6,
             "gameObject": {
-                "instanceID": -82084
+                "instanceID": -5224
             },
             "position": {
                 "x": 49.47062301635742,
@@ -164,10 +164,10 @@
             "data": "JOINTS:1=-1,;"
         },
         {
-            "id": 0,
+            "id": "",
             "type": 4,
             "gameObject": {
-                "instanceID": -82098
+                "instanceID": -5238
             },
             "position": {
                 "x": -13.64560604095459,
@@ -184,10 +184,10 @@
             "data": "JOINTS:0=-1,;"
         },
         {
-            "id": 0,
+            "id": "",
             "type": 4,
             "gameObject": {
-                "instanceID": -82112
+                "instanceID": -5252
             },
             "position": {
                 "x": -13.64560604095459,
