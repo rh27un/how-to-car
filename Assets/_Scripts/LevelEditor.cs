@@ -10,6 +10,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.Transactions;
 using System.Data;
+using UnityEngine.AI;
 
 public class LevelEditor : MonoBehaviour
 {
@@ -223,7 +224,8 @@ public class LevelEditor : MonoBehaviour
 				inputYRot.text = rotationEulers.y.ToString();
 				inputZRot.text = rotationEulers.z.ToString();
 
-				inputObjectType.value = selectedLevelObject.type;
+				inputObjectType.SetValueWithoutNotify(selectedLevelObject.type);
+				inputObjectType.RefreshShownValue();
 				inputID.text = selectedLevelObject.id;
 			}
 
@@ -333,7 +335,7 @@ public class LevelEditor : MonoBehaviour
 		moveModeText.text = moveState == EditorState.Simple ? "Simple" : "Advanced";
 		camera = GetComponent<Camera>();
 		gizmo = Instantiate(gizmoPrefab, transform.forward * -1000f, Quaternion.identity);
-		preview = Instantiate(prefabList.Prefabs[0], Vector3.zero, Quaternion.identity);
+		preview = Instantiate(prefabList.Prefabs[0], transform.forward * -1000f, Quaternion.identity);
 		preview.GetComponent<MeshRenderer>().material = previewMaterial;
 		preview.layer = 2;
 		var bussy = prefabList.Prefabs[0].GetComponent<MeshFilter>();
@@ -398,7 +400,6 @@ public class LevelEditor : MonoBehaviour
 			case EditorState.Advanced:
 				if (selectedObjects.Count > 0)
 				{
-					UpdateInspectinator();
 					if(Input.GetKeyDown(KeyCode.Delete)){
 						
 						foreach(GameObject selectedObject in selectedObjects)
@@ -689,6 +690,7 @@ public class LevelEditor : MonoBehaviour
 				break;
 		}
 
+		UpdateInspectinator();
 		//if (Input.GetKeyDown(KeyCode.C))
 		//{
 		//	Save();
@@ -777,6 +779,7 @@ public class LevelEditor : MonoBehaviour
 			if (trackObjects.ContainsKey(obj.type))
 			{
 				var newTrack = new TrackObject(trackObjects[obj.type]);
+				newTrack.id = obj.id;
 				newTrack.group_id = obj.group_id;
 				newTrack.position = obj.position;
 				newTrack.rotation = obj.rotation;
@@ -799,7 +802,7 @@ public class LevelEditor : MonoBehaviour
 					else
 					{
 						var joint = newTrack.joints[i];
-						var previewObject = Instantiate(prefabList.Prefabs[4]);
+						var previewObject = Instantiate(prefabList.Prefabs[4], transform.forward * -1000f, Quaternion.identity);
 						previewObject.GetComponentInChildren<MeshRenderer>().material = previewMaterial;
 						previewObject.transform.GetChild(0).gameObject.AddComponent<RoadPreview>().Set(newTrack, i);
 						previewObject.tag = "RoadPreview";
@@ -904,6 +907,31 @@ public class LevelEditor : MonoBehaviour
 				Vector3 rot = selectedObjects[0].transform.rotation.eulerAngles;
 				selectedObjects[0].transform.rotation = Quaternion.Euler(rot.x, rot.y, z);
 			}
+		}
+	}
+
+	public void SetObjectType(Int32 type)
+	{
+		if(selectedObjects.Count == 1)
+		{
+			LevelObject levelObject = objects.Where(o => o.gameObject == selectedObjects[0]).FirstOrDefault();
+			levelObject.type = type;
+			var mesh = prefabList.Prefabs[type].GetComponentInChildren<MeshFilter>().sharedMesh;
+			var material = prefabList.Prefabs[type].GetComponentInChildren<MeshRenderer>().sharedMaterial;
+
+			selectedObjects[0].GetComponentInChildren<MeshFilter>().sharedMesh = mesh;
+			selectedObjects[0].GetComponentInChildren<MeshCollider>().sharedMesh = mesh;
+			selectedObjects[0].GetComponentInChildren<MeshRenderer>().sharedMaterial = material;
+
+		}
+	}
+
+	public void SetId(string id)
+	{
+		if(selectedObjects.Count == 1)
+		{
+			LevelObject levelObject = objects.SingleOrDefault(o => o.gameObject == selectedObjects[0]);
+			levelObject.id = id.Trim();
 		}
 	}
 }

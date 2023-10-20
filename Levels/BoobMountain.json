@@ -1,13 +1,13 @@
 {
-    "guid": "bf00c4af-619d-4918-9780-e27d6b89b8b2",
+    "guid": "fe195bfd-f48c-444c-b181-f11741941dcb",
     "prettyName": "Boob Mountain",
     "description": "Climb the goddamn mountain",
     "objects": [
         {
-            "id": 0,
+            "id": "Start",
             "type": 4,
             "gameObject": {
-                "instanceID": -39228
+                "instanceID": -34080
             },
             "position": {
                 "x": 2.0312747955322267,
@@ -24,10 +24,10 @@
             "data": "JOINTS:;"
         },
         {
-            "id": 0,
-            "type": 4,
+            "id": "cuve",
+            "type": 0,
             "gameObject": {
-                "instanceID": -39242
+                "instanceID": -34094
             },
             "position": {
                 "x": 2.0312747955322267,
@@ -44,10 +44,10 @@
             "data": "JOINTS:;"
         },
         {
-            "id": 0,
-            "type": 5,
+            "id": "",
+            "type": 1,
             "gameObject": {
-                "instanceID": -39256
+                "instanceID": -34104
             },
             "position": {
                 "x": 2.0312747955322267,
@@ -64,10 +64,10 @@
             "data": "JOINTS:;"
         },
         {
-            "id": 0,
-            "type": 8,
+            "id": "",
+            "type": 3,
             "gameObject": {
-                "instanceID": -39270
+                "instanceID": -34114
             },
             "position": {
                 "x": 16.331275939941408,
@@ -84,10 +84,10 @@
             "data": "JOINTS:;"
         },
         {
-            "id": 0,
-            "type": 5,
+            "id": "",
+            "type": 7,
             "gameObject": {
-                "instanceID": -39296
+                "instanceID": -34124
             },
             "position": {
                 "x": 23.831275939941408,
@@ -104,10 +104,10 @@
             "data": "JOINTS:;"
         },
         {
-            "id": 0,
-            "type": 4,
+            "id": "",
+            "type": 3,
             "gameObject": {
-                "instanceID": -39310
+                "instanceID": -34138
             },
             "position": {
                 "x": 30.63127899169922,
@@ -124,10 +124,10 @@
             "data": "JOINTS:;"
         },
         {
-            "id": 0,
+            "id": "",
             "type": 9,
             "gameObject": {
-                "instanceID": -39324
+                "instanceID": -34148
             },
             "position": {
                 "x": 30.63127899169922,
