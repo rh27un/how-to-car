@@ -346,6 +346,13 @@ public class Serializer : MonoBehaviour
 						obj.gameObject = newObject;
 					}
 				}
+				var car = GameObject.FindGameObjectWithTag("Player");
+				var spawn = GameObject.FindGameObjectWithTag("Spawn");
+				if (spawn != null)
+				{
+					car.transform.position = spawn.transform.position;
+					car.transform.rotation = spawn.transform.rotation;
+				}
 				break;
 			case GameMode.Editor:
 				GameObject.Find("GAMEPLAY").SetActive(false);
