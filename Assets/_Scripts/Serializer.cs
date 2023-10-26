@@ -144,6 +144,8 @@ public class LevelData{
 	public string guid;
 	public string prettyName;
 	public string description;
+	public int car;
+	public float par;
 	public LevelObject[] objects;
 }
 

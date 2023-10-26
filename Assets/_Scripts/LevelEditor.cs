@@ -94,6 +94,19 @@ public class LevelEditor : MonoBehaviour
 	protected TMP_Dropdown inputObjectType;
 	[SerializeField]
 	protected TMP_InputField inputID;
+
+	[SerializeField]
+	protected GameObject optionsPanel;
+
+	[SerializeField]
+	protected Vector3 optionsHidden;
+	[SerializeField]
+	protected Vector3 optionsShown;
+
+	protected bool isOptionsShown;
+	protected float oT = 1f;
+	protected float optionsSpeed = 2f;
+
 	Dictionary<int, TrackObject> trackObjects = new Dictionary<int, TrackObject>()
 
 	{
@@ -360,8 +373,24 @@ public class LevelEditor : MonoBehaviour
 		inputObjectType.options = prefabList.Prefabs.Select(x => new TMP_Dropdown.OptionData(x.name)).ToList();
 	}
 
+	private void DoLerps()
+	{
+		var optionsTransform = optionsPanel.GetComponent<RectTransform>();
+		if(isOptionsShown && oT < 1)
+		{
+			optionsTransform.anchoredPosition3D = Vector3.Lerp(optionsHidden, optionsShown, oT);
+			oT += optionsSpeed * Time.deltaTime;
+		} 
+		else if (!isOptionsShown && oT < 1)
+		{
+			optionsTransform.anchoredPosition3D = Vector3.Lerp(optionsShown, optionsHidden, oT);
+			oT += optionsSpeed * Time.deltaTime;
+		}
+	}
+
 	private void Update()
 	{
+		DoLerps();
 		if (EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.tag == "InputField")
 			return;
 		if (Input.GetButtonDown("SwitchMode"))
@@ -932,6 +961,15 @@ public class LevelEditor : MonoBehaviour
 		{
 			LevelObject levelObject = objects.SingleOrDefault(o => o.gameObject == selectedObjects[0]);
 			levelObject.id = id.Trim();
+		}
+	}
+
+	public void TogglePanel()
+	{
+		isOptionsShown = !isOptionsShown;
+		if(oT >= 1)
+		{
+			oT = 0;
 		}
 	}
 }
