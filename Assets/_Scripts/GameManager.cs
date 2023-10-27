@@ -23,6 +23,8 @@ public class GameManager : MonoBehaviour
 	[SerializeField]
 	protected GameObject postGameMenu;
 	[SerializeField]
+	protected GameObject postVerifyMenu;
+	[SerializeField]
 	protected GameObject pauseMenu;
 	[SerializeField]
 	protected GameObject hud;
@@ -41,11 +43,13 @@ public class GameManager : MonoBehaviour
 	protected int numUnorderedCheckpoints;
 	protected int numClearedUnorderedCheckpoints;
 	protected Serializer serializer;
+	public bool verifying;
 
-	private void Start()
+	private void OnEnable()
 	{
 		var serializerObject = GameObject.FindGameObjectWithTag("Serializer");
-		if(serializerObject != null){
+		if (serializerObject != null)
+		{
 			serializer = serializerObject.GetComponent<Serializer>();
 			levelName.text = serializer.GetLevelName();
 			levelDescription.text = serializer.GetLevelDescription();
@@ -54,10 +58,15 @@ public class GameManager : MonoBehaviour
 		state = GameState.Unstarted;
 		preGameMenu.SetActive(true);
 		postGameMenu.SetActive(false);
+		postVerifyMenu.SetActive(false);
 		pauseMenu.SetActive(false);
 		hud.SetActive(false);
 		numUnorderedCheckpoints = GameObject.FindGameObjectsWithTag("UnorderedCheckpoint").Length;
 		numClearedUnorderedCheckpoints = 0;
+	}
+
+	private void Start()
+	{
 	}
 
 	public void ClearUnorderedCheckpoint(GameObject checkpointObject){
@@ -85,21 +94,48 @@ public class GameManager : MonoBehaviour
 	}
 
 	public void FinishGame(){
+		if (!verifying)
+			FinishGameReal();
+		else
+			FinishGameVerify();
+	}
+	private void FinishGameReal()
+	{
 		finishTime = Time.time;
 		state = GameState.Finished;
 		preGameMenu.SetActive(false);
 		postGameMenu.SetActive(true);
+		postVerifyMenu.SetActive(false);
 		pauseMenu.SetActive(false);
 		hud.SetActive(false);
 		float timeTooken = finishTime - startTime;
 		endTimer.text = TimeSpan.FromSeconds(timeTooken).ToString(@"mm\:ss\.ff");
 		newPB.SetActive(serializer.FinishLevel(timeTooken));
 	}
+	private void FinishGameVerify()
+	{
+		finishTime = Time.time;
+		state = GameState.Finished;
+		preGameMenu.SetActive(false);
+		postGameMenu.SetActive(false);
+		postVerifyMenu.SetActive(true);
+		pauseMenu.SetActive(false);
+		hud.SetActive(false);
+		float timeTooken = finishTime - startTime;
+		endTimer.text = TimeSpan.FromSeconds(timeTooken).ToString(@"mm\:ss\.ff");
+		//newPB.SetActive(serializer.FinishLevel(timeTooken));
+	}
+	public void ReturnToEditor()
+	{
+		serializer.StartEditor();
+	}
+
 	public void StartGame() {
 		startTime = Time.time;
 		state = GameState.Started;
 		preGameMenu.SetActive(false);
 		postGameMenu.SetActive(false);
+		postVerifyMenu.SetActive(false);
 		pauseMenu.SetActive(false);
 		hud.SetActive(true);
 	}
@@ -110,6 +146,7 @@ public class GameManager : MonoBehaviour
 		state = GameState.Paused;
 		preGameMenu.SetActive(false);
 		postGameMenu.SetActive(false);
+		postVerifyMenu.SetActive(false);
 		pauseMenu.SetActive(true);
 		hud.SetActive(false);
 	}
@@ -120,6 +157,7 @@ public class GameManager : MonoBehaviour
 		state = GameState.Started;
 		preGameMenu.SetActive(false);
 		postGameMenu.SetActive(false);
+		postVerifyMenu.SetActive(false);
 		pauseMenu.SetActive(false);
 		hud.SetActive(true);
 	}

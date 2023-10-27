@@ -180,6 +180,17 @@ public class LevelEditor : MonoBehaviour
 					new TrackJoint() { offset = new Vector3(0f, 0f, -7.5f), forward = Vector3.back }
 				}
 			}
+		},
+		{
+			10, new TrackObject()
+			{
+				type = 10,
+				joints = new TrackJoint[2]
+				{
+					new TrackJoint() { offset = new Vector3(0f, 0f, 7.5f), forward = Vector3.forward },
+					new TrackJoint() { offset = new Vector3(0f, 0f, -7.5f), forward = Vector3.back }
+				}
+			}
 		}
 	};
 
@@ -779,6 +790,11 @@ public class LevelEditor : MonoBehaviour
 		go.transform.position = info.point + offset + normal * distance;
 
 	}
+	public void Verify()
+	{
+		serializer.StartGame(true);
+	}
+
 
 	public void Save()
 	{

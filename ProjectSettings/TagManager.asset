@@ -12,6 +12,7 @@ TagManager:
   - UnorderedCheckpoint
   - FinishLine
   - Spawn
+  - LevelObject
   layers:
   - Default
   - TransparentFX

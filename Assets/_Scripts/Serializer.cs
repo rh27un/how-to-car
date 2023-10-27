@@ -1,3 +1,4 @@
+using JetBrains.Rider.Unity.Editor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.SocialPlatforms.GameCenter;
 
 [Serializable]
 public class LevelObject
@@ -179,6 +181,9 @@ public class Serializer : MonoBehaviour
 
 	protected ClearData selectedProfile;
 
+	protected GameObject gamePlay;
+	protected GameObject editor;
+
 	// Start is called before the first frame update
 	void Awake() 
 	{
@@ -288,6 +293,11 @@ public class Serializer : MonoBehaviour
 		return false;
 	}
 
+	public void VerifyLevel(float time)
+	{
+		var levelData = 
+	}
+
 	public void SetFilePathManually(string text)
 	{
 		text = text.Replace(" ", string.Empty);
@@ -331,37 +341,66 @@ public class Serializer : MonoBehaviour
 		}
 	}
 
+	public void StartGame(bool verify = false)
+	{
+		foreach(var go in GameObject.FindGameObjectsWithTag("LevelObject"))
+		{
+			Destroy(go);
+		}
+		gamePlay.SetActive(true);
+		editor.SetActive(false);
+		var level = LoadLevel();
+		var objects = level.objects.ToList();
+		
+		if (objects != null)
+		{
+			foreach (var obj in objects)
+			{
+				var newObject = Instantiate(prefabList.Prefabs[obj.type], obj.position, obj.rotation);
+				obj.gameObject = newObject;
+			}
+		}
+		var car = GameObject.FindGameObjectWithTag("Player");
+		if (car == null)
+			car = Instantiate(carList.Prefabs[level.car], Vector3.zero, Quaternion.identity);
+		else
+		{
+			car.GetComponent<Rigidbody>().velocity = Vector3.zero;
+			foreach(var tr in car.GetComponentsInChildren<TrailRenderer>())
+			{
+				tr.Clear();
+			}
+		}
+		var spawn = GameObject.FindGameObjectWithTag("Spawn");
+		if (spawn != null)
+		{
+			car.transform.position = spawn.transform.position;
+			car.transform.rotation = spawn.transform.rotation;
+		}
+		GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CamFollow>().Setup();
+		GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>().verifying = verify;
+	}
+
+	public void StartEditor()
+	{
+		Destroy(GameObject.FindGameObjectWithTag("Player"));
+		gamePlay.SetActive(false);
+		editor.SetActive(true);
+	}
+
 	void OnSceneLoaded(Scene scene, LoadSceneMode mode)
 	{
 		if (scene.buildIndex == 0)
 			return;
+		gamePlay = GameObject.Find("GAMEPLAY");
+		editor = GameObject.Find("LEVEL EDITOR");
 		switch (gameMode)
 		{
 			case GameMode.Play:
-				GameObject.Find("GAMEPLAY").SetActive(true);
-				GameObject.Find("LEVEL EDITOR").SetActive(false);
-				var level = LoadLevel();
-				var objects = level.objects.ToList();
-				if (objects != null)
-				{
-					foreach (var obj in objects)
-					{
-						var newObject = Instantiate(prefabList.Prefabs[obj.type], obj.position, obj.rotation);
-						obj.gameObject = newObject;
-					}
-				}
-				var car = Instantiate(carList.Prefabs[level.car], Vector3.zero, Quaternion.identity);
-				var spawn = GameObject.FindGameObjectWithTag("Spawn");
-				if (spawn != null)
-				{
-					car.transform.position = spawn.transform.position;
-					car.transform.rotation = spawn.transform.rotation;
-				}
-				GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CamFollow>().Setup();
+				StartGame();
 				break;
 			case GameMode.Editor:
-				GameObject.Find("GAMEPLAY").SetActive(false);
-				GameObject.Find("LEVEL EDITOR").SetActive(true);
+				StartEditor();
 				break;
 			default:
 				Debug.LogError("Invalid Game Mode");
