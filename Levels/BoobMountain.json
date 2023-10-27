@@ -1,13 +1,15 @@
 {
-    "guid": "5a322ca8-6489-4077-93a1-1d343ff0c6a0",
+    "guid": "1bac0c3d-c4a8-4656-84dd-4107a7c69d34",
     "prettyName": "Boob Mountain",
     "description": "Climb the goddamn mountain",
+    "car": 1,
+    "par": 0.0,
     "objects": [
         {
             "id": "Start",
             "type": 4,
             "gameObject": {
-                "instanceID": -4662
+                "instanceID": -201788
             },
             "position": {
                 "x": 2.0312747955322267,
@@ -27,7 +29,7 @@
             "id": "cuve",
             "type": 0,
             "gameObject": {
-                "instanceID": -4676
+                "instanceID": -201802
             },
             "position": {
                 "x": 2.0312747955322267,
@@ -47,7 +49,7 @@
             "id": "",
             "type": 1,
             "gameObject": {
-                "instanceID": -4686
+                "instanceID": -201812
             },
             "position": {
                 "x": 2.0312747955322267,
@@ -67,7 +69,7 @@
             "id": "",
             "type": 3,
             "gameObject": {
-                "instanceID": -4696
+                "instanceID": -201822
             },
             "position": {
                 "x": 16.331275939941408,
@@ -87,7 +89,7 @@
             "id": "",
             "type": 7,
             "gameObject": {
-                "instanceID": -4706
+                "instanceID": -201832
             },
             "position": {
                 "x": 23.831275939941408,
@@ -107,7 +109,7 @@
             "id": "",
             "type": 3,
             "gameObject": {
-                "instanceID": -4720
+                "instanceID": -201846
             },
             "position": {
                 "x": 30.63127899169922,
@@ -127,7 +129,7 @@
             "id": "",
             "type": 9,
             "gameObject": {
-                "instanceID": -4730
+                "instanceID": -201856
             },
             "position": {
                 "x": 30.63127899169922,
@@ -147,7 +149,7 @@
             "id": "",
             "type": 10,
             "gameObject": {
-                "instanceID": -5080
+                "instanceID": -201882
             },
             "position": {
                 "x": 53.256378173828128,

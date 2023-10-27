@@ -27,7 +27,7 @@ public class CameraMove : MonoBehaviour
 	}
 	private void Update()
 	{
-		if (EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.tag == "InputField")
+		if ((EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.tag == "InputField") || LevelEditor.IsPointerOverUIObject())
 			return;
 		Vector3 forward = transform.forward;
 		forward.y = 0;

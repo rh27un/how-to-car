@@ -93,6 +93,10 @@ public class CarController : MonoBehaviour
 				{
 					rightCurve.stiffness = 1f;
 				}
+			} else
+			{
+				axleInfo.right.transform.GetChild(1).GetComponent<TrailRenderer>().emitting = false;
+
 			}
 			if (axleInfo.left.GetGroundHit(out leftHit))
 			{
@@ -113,6 +117,10 @@ public class CarController : MonoBehaviour
 				{
 					leftCurve.stiffness = 1f;
 				}
+			} else
+			{
+
+				axleInfo.left.transform.GetChild(1).GetComponent<TrailRenderer>().emitting = false;
 			}
 
 			if (axleInfo.steering)

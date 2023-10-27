@@ -160,6 +160,8 @@ public class Serializer : MonoBehaviour
 
 	[SerializeField]
 	protected SpawnablePrefabs prefabList;
+	[SerializeField]
+	protected SpawnablePrefabs carList;
 
 	public string filePath;
 	public GameMode gameMode;
@@ -348,13 +350,14 @@ public class Serializer : MonoBehaviour
 						obj.gameObject = newObject;
 					}
 				}
-				var car = GameObject.FindGameObjectWithTag("Player");
+				var car = Instantiate(carList.Prefabs[level.car], Vector3.zero, Quaternion.identity);
 				var spawn = GameObject.FindGameObjectWithTag("Spawn");
 				if (spawn != null)
 				{
 					car.transform.position = spawn.transform.position;
 					car.transform.rotation = spawn.transform.rotation;
 				}
+				GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CamFollow>().Setup();
 				break;
 			case GameMode.Editor:
 				GameObject.Find("GAMEPLAY").SetActive(false);
@@ -420,6 +423,13 @@ public class Serializer : MonoBehaviour
 			Debug.LogWarning("The file " + filePath + " could not be found");
 			return null;
 		}
+	}
+
+	public void SetCar(int car)
+	{
+		if(levelData == null)
+			levelData = new LevelData();
+		levelData.car = car;
 	}
 
 	public void SetLevelName(string name){

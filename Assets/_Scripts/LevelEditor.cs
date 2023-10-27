@@ -29,6 +29,8 @@ public class LevelEditor : MonoBehaviour
 
 	[SerializeField]
 	protected SpawnablePrefabs prefabList;
+	[SerializeField]
+	protected SpawnablePrefabs carList;
 
 	protected List<LevelObject> objects;
 
@@ -78,6 +80,8 @@ public class LevelEditor : MonoBehaviour
 	protected TMP_InputField levelName;
 	[SerializeField]
 	protected TMP_InputField levelDescription;
+	[SerializeField]
+	protected TMP_Dropdown car;
 	[SerializeField]
 	protected TMP_InputField inputXPos;
 	[SerializeField]
@@ -371,6 +375,7 @@ public class LevelEditor : MonoBehaviour
 			button.GetComponent<Button>().onClick.AddListener(delegate { SetType(type); });
 		}
 		inputObjectType.options = prefabList.Prefabs.Select(x => new TMP_Dropdown.OptionData(x.name)).ToList();
+		car.options = carList.Prefabs.Select(x => new TMP_Dropdown.OptionData(x.name)).ToList();
 	}
 
 	private void DoLerps()
@@ -521,7 +526,7 @@ public class LevelEditor : MonoBehaviour
 						else if (selectedAxis == -Vector3.up)
 							selectedObject.transform.RotateAround(gizmo.transform.position, selectedAxis, Input.GetAxis("Mouse X"));
 					}
-					if (Input.GetMouseButtonUp(0) && !IsPointerOverUIObject())
+					if (Input.GetMouseButtonUp(0))
 					{
 						selectedAxis = Vector3.zero;
 					}
@@ -780,6 +785,7 @@ public class LevelEditor : MonoBehaviour
 		serializer.SetLevelName(levelName.text);
 		serializer.SetLevelDescription(levelDescription.text);
 		serializer.SetFilePathManually(levelName.text);
+		serializer.SetCar(car.value);
 		serializer.SaveLevel(objects);
 	}
 
@@ -790,6 +796,7 @@ public class LevelEditor : MonoBehaviour
 		var objectsPlain = levelData.objects.ToList();
 		levelName.text = levelData.prettyName;
 		levelDescription.text = levelData.description;
+		car.value = levelData.car;
 		if(objectsPlain == null)
 			return;
 		foreach(var obj in objectsPlain)

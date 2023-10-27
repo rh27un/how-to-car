@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
 public class CamFollow : MonoBehaviour
@@ -13,7 +14,7 @@ public class CamFollow : MonoBehaviour
     protected Rigidbody carBody;
     new protected Camera camera;
     // Start is called before the first frame update
-    void Start()
+    public void Setup()
     {
         camera = GetComponent<Camera>();
         car = GameObject.FindGameObjectWithTag("Player").transform;
@@ -23,6 +24,8 @@ public class CamFollow : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (carBody == null)
+            return;
         Vector3 trajectory = carBody.velocity;
         camera.orthographicSize = Mathf.Lerp(camera.orthographicSize, 5 + (trajectory.magnitude * 0.5f), stiffness);
         transform.position = Vector3.Lerp(transform.position, car.position + trajectory + camOffset, stiffness);
