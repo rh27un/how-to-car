@@ -147,7 +147,12 @@ public class LevelData{
 	public string prettyName;
 	public string description;
 	public int car;
-	public float par;
+	//time set by the author of the map to verify it
+	public float authorTime;
+	//a slightly more lenient time required to achieve the bonus star
+	public float bonusTime;
+	//a much more lenient time required to beat the level for one star
+	public float parTime;
 	public LevelObject[] objects;
 }
 
@@ -295,7 +300,11 @@ public class Serializer : MonoBehaviour
 
 	public void VerifyLevel(float time)
 	{
-		var levelData = 
+		float authorTime = levelData.authorTime;
+		if(time < authorTime || authorTime == 0f)
+		{
+			levelData.authorTime = time;
+		}
 	}
 
 	public void SetFilePathManually(string text)
